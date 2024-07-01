@@ -1,7 +1,8 @@
 //import logo from './logo.svg'; 
 import React , { useState   }   from 'react';
-import {EventCalendar,WEEKDAYS,httpPost,todayDate,ShowModal } from "./functions.tsx";
-import {format} from "date-fns";
+import {EventCalendar,WEEKDAYS,httpPost,todayDate } from "./functions.tsx";
+import {format} from "date-fns"; 
+import Modal from 'react-bootstrap/Modal';
 
 
 
@@ -23,7 +24,18 @@ function App() {
   const [showTabNavigation, setshowTabNavigation] = useState('firstpage');
   const [availabilityInputs, setAvailabilityInputs] = useState( WEEKDAYS.reduce((acc, day) => ({ ...acc, [day]: '' }), {}));
    const [fromTodayDateFurther, setFromTodayDateFurther] = useState([]);
-  const [ModalShowV, setModalShowV] = useState(null);
+   
+  const [showModal, setshowModal] = useState({
+    visible: false,
+    header:(<>header xxxxxxxxxx</>),
+    body:(<>Body xxxxxxxx</>),
+    closeText:(<></>),
+    closeFunc:()=>{},
+    okText:(<></>),
+    okColor:"#xxxx",
+    okFunc:()=>{},
+  });
+
   //
  //
  //***********************
@@ -83,7 +95,21 @@ function App() {
   //**************
   return (
     <>
-    {ModalShowV !== null && <ModalShowV />}
+    {showModal.visible && <Modal
+        show={showModal.visible}
+        centered={true}
+        backdrop="static"
+        keyboard={false}
+        scrollable={true}
+      >
+        <Modal.Header closeButton={false}><h5 className='mb-0 mt-0'>{showModal.header?showModal.header:(<>Alert !</>)}</h5></Modal.Header>
+        <Modal.Body>{showModal.body?showModal.body:(<>no body</>)}</Modal.Body>
+        <Modal.Footer>
+          <button className="btn btn-secondary" onClick={showModal.closeFunc?()=>showModal.closeFunc():()=>{setshowModal({show:false})}}>{showModal.closeText?showModal.closeText:(<>Close</>)}</button>
+          {showModal.okText?(<button className={`btn ${showModal.okColor ? showModal.okColor : 'btn-primary'}`} onClick={()=>showModal.okFunc()}>{showModal.okText}</button>):(<></>)}
+        </Modal.Footer>
+      </Modal>}
+      
       
       <header>  </header>
 
@@ -108,7 +134,7 @@ function App() {
             <div className="container mt-5">
                 <h2 style={{textAlign:'center'}}>Upcoming Appointments</h2>
                 <EventCalendar
-              events={fromTodayDateFurther} setModalShowPass={setModalShowV}/>
+              events={fromTodayDateFurther} setShowModalPassArg={setshowModal}/>
             </div>
         </section>}
 
@@ -117,11 +143,11 @@ function App() {
         <section  >
             <div className="container mt-5">
                 <div className="list-group settingsj">
-                    <div className="list-group-item list-group-item-action settingsj-sunmoon"><span><i className="bi bi-bell"></i>Notifications </span><i className="bi bi-toggle-off"></i></div>
+                    <div className="list-group-item list-group-item-action d-flex justify-content-between"><span><i className="bi bi-bell"></i>Notifications </span><i className="bi bi-toggle-off"></i></div>
 
                     <br />
-                    <div className="list-group-item list-group-item-action settingsj-sunmoon" onClick={()=>{window.sharparp.push({ title: window.sharparp.option.title.href, value: "https://stripe.com/" })}}><span>View payments - stripe.com </span><i className="bi bi-box-arrow-up-right"></i></div>
-                    <div className="list-group-item list-group-item-action settingsj-sunmoon" onClick={()=>{window.sharparp.push({ title: window.sharparp.option.title.href, value: "https://cocohairsignature.com/" }) }}><span>cocohairsignature.com </span><i className="bi bi-box-arrow-up-right"></i></div>
+                    <div className="list-group-item list-group-item-action d-flex justify-content-between" onClick={()=>{window.sharparp.push({ title: window.sharparp.option.title.href, value: "https://stripe.com/" })}}><span>View payments - stripe.com </span><i className="bi bi-box-arrow-up-right"></i></div>
+                    <div className="list-group-item list-group-item-action d-flex justify-content-between" onClick={()=>{window.sharparp.push({ title: window.sharparp.option.title.href, value: "https://cocohairsignature.com/" }) }}><span>cocohairsignature.com </span><i className="bi bi-box-arrow-up-right"></i></div>
                     <br />
 
                     <div className="list-group-item list-group-item-action" onClick={()=>bottomNavClickPage(pagesNav.profile)}>
@@ -140,51 +166,59 @@ function App() {
         {showTabNavigation === pagesNav.availability &&
         //availability
         <section>
+          
             <div className="container mt-5">
                 <div className="container mt-5">
                     <h2>Weekly schedules</h2>
                     <p>Leave empty for unavailability (24hrs clock)</p>
                     {WEEKDAYS.map((day, index) => (
-                      <div className="form-group schld-days-ofweek" key={day}>
+                      <div className="form-group schld-days-ofweek d-flex mb-3 align-items-center" key={day}>
                           <label htmlFor={day.toLowerCase()}>{day}:</label>
                           <input placeholder="0845, 1230, 1540, 2000, 0000" type="text"
-                            className="form-control" id={day.toLowerCase()}
+                            className="shadow-sm form-control" id={day.toLowerCase()}
                             name={day.toLowerCase()} value={ availabilityInputs[day.toLowerCase()]} onChange={timeWriterOnchange}/>
                       </div>
                     ))}
 
-                    <button type="submit" className="btn btn-primary w-100 mt-3 p-3 saveweeklyschedules"
-                      onClick={()=>setModalShowV(() => () =>
-                        ShowModal({body:<>Do you want to save the weekly schedules.</>,
-                          okbtn:"Save",okbtnFunc:()=>{
+                    <button type="submit" className="shadow-sm btn btn-primary w-100 mt-3 p-3 saveweeklyschedules"
+                      onClick={()=>
+                        setshowModal({
+                          visible:true,
+                          body:<>Do you want to save this weekly schedules.</>,
+                          okText:"Save",
+                          okFunc:()=>{
+                              let err=false;
                                 WEEKDAYS.forEach(day => {
                                     const dayKey = day.toLowerCase();
                                     const inputValue = availabilityInputs[dayKey];
-                                    const matches = inputValue.match(/(\d{4})(?=, )/g);
-                                     if(matches || inputValue===""){
-                                      alert(`${day}: ${inputValue}`);
-                                      
-                                     }
+                                    const matches = inputValue.match(/^(\d{4})(, \d{4})*$/) || false;
+                                    if(!matches && inputValue!==""){ err=`Input valid dates for ${dayKey}`;}
                                   });
-                              
-                          },
-                          closebtnFunc:()=>{setModalShowV(null)}})
-                      )}>Update Weekly</button>
+                                  
+                                  if(err!==false){ 
+                                      setshowModal({
+                                        visible:true, body:<>{err}</>,header:"Error !!!"});
+                                   }else{
+                                    alert("thats wassup");
+                                 }
+                          }
+                      })
+                      }>Update Weekly</button>
 
                     <h2 className="mt-5">Override Schedules</h2>
                     <div className="mt-4" id="overridecalendar"></div>
                     <p className="mt-4">Click a date and enter only the time(s) you will be available for that date.<br /><br />Leave empty for unavailability (24hrs clock)</p> 
 
-                    <input type="text" placeholder="0920, 1230, 1400,1845" className="text-success form-control mb-2" id="updateoverride" name="updateoverride" />
+                    <input type="text" placeholder="0920, 1230, 1400,1845" className="text-success form-control mb-2 shadow-sm" id="updateoverride" name="updateoverride" />
 
                     <ul className="list-group overrideitemslist"> </ul>
 
-                    <button type="submit" className="btn btn-primary w-100 mt-3 p-3 addoverridebtnclick"
-                      onClick={()=>setModalShowV(() => () =>
-                        ShowModal({body:"Do you want to override this date(s).",
+                    <button type="submit" className="shadow-sm btn btn-primary w-100 mt-3 p-3 addoverridebtnclick"
+                      onClick={()=>setshowModal({visible:true,
+                          body:"Do you want to override this date(s).",
                           okbtn:"Save",okbtnFunc:()=>{alert();},
-                          closebtn:"Close",closebtnFunc:()=>{setModalShowV(null)}})
-                      )}>Add Override</button>
+                          closeText:"Close"
+                      })}>Add Override</button>
                 </div>
             </div>
         </section>
@@ -194,12 +228,16 @@ function App() {
         {showTabNavigation === pagesNav.profile &&
           //profile page
           <section className="container mt-5">
-            <div className='p-3 mb-2 text-light rounded-pill' style={{backgroundColor: '#4fa764' }}>Your account is active</div>
+            <div className='p-3 mb-2 text-light rounded-pill shadow-sm d-flex justify-content-between' style={{backgroundColor: 'rgb(98 228 151 / 67%)' }}><span>Your account is active</span><i className="bi bi-check2-all"></i></div>
             <div>
-              <input type="text" className='form-control mb-2' placeholder="Full Name" />
-              <input type="text" className='form-control mb-2' placeholder="Email" />
-              <input type="text" className='form-control mb-2' placeholder="Phone Number" />
-              <button type="text" placeholder="phoneNumebr" className="btn btn-primary">Save Profile</button>
+              <h2 className='text-center mb-3 mt-3'>Edit your profile</h2>
+              <label htmlFor="fullname" className='p-1'>FullName</label>
+              <input type="text" id="fullname" className='form-control mb-3 shadow-sm' placeholder="Full Name" />
+              <label htmlFor="email" className='p-1'>Email</label>
+              <input type="text" id="email" className='form-control mb-3 shadow-sm' placeholder="Email" />
+              <label htmlFor="phonenumber" className='p-1'>Phone Number</label>
+              <input type="text" id="phonenumber" className='form-control mb-3 shadow-sm' placeholder="Phone Number" />
+              <button type="text" placeholder="phoneNumebr" className="btn btn-primary mt-1">Save Profile</button>
             </div>
           </section>
         }
