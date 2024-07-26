@@ -79,6 +79,14 @@ interface EventCalendarProps {
   setModalShowPass;
 }
 
+function copyPhoneEmail(phoneEmail, type){
+  try{
+    navigator.clipboard.writeText(phoneEmail);
+    window.location.href=`${(type==="phone")?'tel':'mailto'}:${phoneEmail}`
+  }catch(e){
+    navigator.clipboard.writeText(phoneEmail);
+  } 
+}
 export const EventCalendar = ({ events, setModalShowPass }: EventCalendarProps) => {
   const firstDayOfMonth = startOfMonth(todayDate);
   const lastDayOfMonth = endOfMonth(todayDate);
@@ -141,11 +149,11 @@ export const EventCalendar = ({ events, setModalShowPass }: EventCalendarProps) 
                 title: "Receipt",
                 body: <>
                       <div className="modal-body">
-                        <div className="w-100 "><img className="w-100" style={{paddingLeft:'50px',paddingRight:'50px'}} src={`${domain}/img/${receiptHttp['image']}.jpg?a47`} /></div>
+                        <div className="w-100"><img className="w-100" style={{paddingLeft:'50px',paddingRight:'50px'}} src={`${domain}/img/${receiptHttp['image']}.jpg?a47`} alt={receiptHttp['hairstyle']}/></div>
                         <ul className="list-group mt-3 listeceiptul">
                           <li><span>Name</span><span>{receiptHttp['customername']}</span></li>
-                          <li><span>Phone</span><span style={{color:'blue'}}>{receiptHttp['phonne']}</span></li>
-                          <li><span>Email</span><span style={{color:'blue'}}>{receiptHttp['email']}</span></li>
+                          <li><span>Phone</span><span style={{color:'blue'}} onClick={()=>copyPhoneEmail(receiptHttp['phonne'],"phone")}>{receiptHttp['phonne']}</span></li>
+                          <li><span>Email</span><span style={{color:'blue'}} onClick={()=>{copyPhoneEmail(receiptHttp['email'],"email")}}>{receiptHttp['email']}</span></li>
                           <li><span>Hairstyle</span><span>{receiptHttp['hairstyle']}</span></li>
                           <li><span>Price</span><span>{receiptHttp['price']}</span></li>
                           <li><span>Date</span><span style={{color:'green'}}>{format(parse(receiptHttp['date'], 'yyyyMMdd', new Date()), 'eeee d MMMM yyyy')}</span></li>
@@ -153,7 +161,22 @@ export const EventCalendar = ({ events, setModalShowPass }: EventCalendarProps) 
                         </ul>
                       </div>
                       </>,
-                okbtn: "Delete this Appointment", okbtncolor: "btn-danger", okbtnFunc: () => { },
+                okbtn: "Delete this Appointment", okbtncolor: "btn-danger", okbtnFunc: () => {
+                  setModalShowPass(() => () =>ShowModal({body:<>
+                                    <div><b>Name: </b>{receiptHttp['customername']}</div>
+                                    <div><b>Hairstyle: </b>{receiptHttp['hairstyle']}</div>
+                                    <div><b>Phone: </b>{receiptHttp['phonne']}</div>
+                                    <div><b>Email: </b>{receiptHttp['email']}</div>
+                            </>,title:"Delete this appointment? Are you sure?",closebtnFunc:() => { setModalShowPass(null) },okbtncolor: "btn-danger",okbtn: "Delete this Appointment", okbtnFunc: () => {
+                              const deleteResponse=httpPost({cros: '1',
+                                deleteAppointment: '2',
+                                ksy: appointment['orderId']});
+                                if(deleteResponse !== null){
+                                  setModalShowPass(null);
+                                  window.location.reload();
+                                }
+                            }}));
+                },
                 closebtnFunc: () => { setModalShowPass(null) }
               })
                     );
@@ -161,7 +184,7 @@ export const EventCalendar = ({ events, setModalShowPass }: EventCalendarProps) 
             setModalShowPass(() => () =>ShowModal({body:<>Error getting receipt.</>,closebtnFunc:() => { setModalShowPass(null) }}));
           }}}>
   <div className="container d-flex flex-row align-items-center mt-4">
-    <div style={{ flex: '2', maxWidth: '120px' }}> <img src={appointment['imageUrl']} alt="Hair Style" /></div>
+    <div style={{ flex: '2', maxWidth: '120px' }}> <img src={appointment['imageUrl']} alt={appointment['hairname']} /></div>
 
     <div className="mx-3 appointmentbookedlist">
       <div className="appointmentbookedlist">{appointment['hairname']}</div>

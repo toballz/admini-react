@@ -201,7 +201,7 @@ function App() {
           <nav className="bg-light navbar ">
             <div className='container'>
               <button onClick={() => bottomNavClickPage(pagesNav.appointments)} className='nav-link btn-href'><i className="bi bi-house"></i><span className="d-block navb-fs">Appointments</span> </button>
-              <button onClick={() => bottomNavClickPage(pagesNav.availability)} className='nav-link btn-href'><i className="bi bi-calendar-week"></i><span className="d-block navb-fs">Availability</span> </button>
+              <button onClick={() => bottomNavClickPage(pagesNav.availability)} className='nav-link btn-href'><i className="bi bi-pencil-square"></i><span className="d-block navb-fs">Edits</span> </button>
               <button className='nav-link btn-href'><i className="bi bi-bar-chart"></i> <span className="d-block navb-fs">Stats</span> </button>
               <button  onClick={() => bottomNavClickPage(pagesNav.settings)} className='nav-link btn-href'><i className="bi bi-gear"></i><span className="d-block navb-fs">Settings</span></button>
             </div>
