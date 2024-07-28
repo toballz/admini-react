@@ -1,6 +1,7 @@
 //import logo from './logo.svg'; 
 import React , { useState   }   from 'react';
-import {EventCalendar,WEEKDAYS,httpPost,icons } from "./functions.tsx";
+import {EventCalendar,WEEKDAYS,httpPost,todayDate } from "./functions.tsx";
+import {format} from "date-fns";
 
 
 
@@ -8,7 +9,7 @@ import {EventCalendar,WEEKDAYS,httpPost,icons } from "./functions.tsx";
 //
 const pagesNav={
   appointments:{
-    name:"appointments", array:{}
+    name:"appointments", array:[]
   },
   settings:{
     name:"settings", array:{}
@@ -26,10 +27,25 @@ function App() {
   //
   const [showTabNavigation, setshowTabNavigation] = useState('firstpage');
   const [availabilityInputs, setInputs] = useState({sunday: '', monday: '', tuesday: '', wednesday: '',thursday:'',friday:'', saturday: ''});
+  const [fromTodayDateFurther, setFromTodayDateFurther] = useState([]);
+ //
+ //
+ //***********************
   const bottomNavClickPage = async (divName) => {
     if(divName===pagesNav.appointments.name){
       
-      
+      const httpResponse = await httpPost({'cros': 'getterCross',
+        'getDatesAppointmentsMoreThanDate': "2",
+        'dateTo': format(todayDate, "yyyyMMdd")});
+        
+     if(httpResponse !== null){
+      const gasg=(await httpResponse.json());
+      const formattedDates = gasg.map(date => {
+        return `${date.year}${date.month}${date.day}`;
+      });
+      setFromTodayDateFurther(JSON.stringify(formattedDates));
+     }
+     //******************
     }else if(divName===pagesNav.availability.name){
       const httpResponse = await httpPost({'cros':"getterCross",'getweeklyStatic': "2",'had': "a"});
       if (httpResponse !== null) {
@@ -94,7 +110,7 @@ function App() {
             <div className="container mt-5">
                 <h2 style={{textAlign:'center'}}>Upcoming Appointments</h2>
                 <EventCalendar
-              events={[20240724,20240712,20240713]}/>
+              events={fromTodayDateFurther}/>
             </div>
         </section>}
 
@@ -103,13 +119,11 @@ function App() {
         <section  >
             <div className="container mt-5">
                 <div className="list-group settingsj">
-                    <div className="list-group-item list-group-item-action settingsj-sunmoon"> <span>Notifications </span>{<icons.bell_on />} </div>
+                    <div className="list-group-item list-group-item-action settingsj-sunmoon"><span><i className="bi bi-bell"></i>Notifications </span><i className="bi bi-toggle-off"></i></div>
 
                     <br />
-                    <div className="list-group-item list-group-item-action settingsj-sunmoon" onClick={()=>{window.sharparp.push({ title: window.sharparp.option.title.href, value: "https://stripe.com/" })}}>
-                      <span>View payments - stripe.com </span>{<icons.box_arrow_right />}
-                    </div>
-                    <div className="list-group-item list-group-item-action settingsj-sunmoon" onClick={()=>{window.sharparp.push({ title: window.sharparp.option.title.href, value: "https://cocohairsignature.com/" }) }}><span>cocohairsignature.com </span>{<icons.box_arrow_right />}</div>
+                    <div className="list-group-item list-group-item-action settingsj-sunmoon" onClick={()=>{window.sharparp.push({ title: window.sharparp.option.title.href, value: "https://stripe.com/" })}}><span>View payments - stripe.com </span><i className="bi bi-box-arrow-up-right"></i></div>
+                    <div className="list-group-item list-group-item-action settingsj-sunmoon" onClick={()=>{window.sharparp.push({ title: window.sharparp.option.title.href, value: "https://cocohairsignature.com/" }) }}><span>cocohairsignature.com </span><i className="bi bi-box-arrow-up-right"></i></div>
                     <br />
 
                     <div className="list-group-item list-group-item-action">
@@ -189,11 +203,10 @@ function App() {
        <footer style={{position: 'fixed',bottom: '0',left: '0',width: '100%'}}>
           <nav className="bg-light  navbar ">
             <div className='container'>
-              <button onClick={() => bottomNavClickPage(pagesNav.appointments.name)} className='nav-link btn-href'>
-                {<icons.house />}<span className="d-block navb-fs">Appointments</span> </button>
-              <button onClick={() => bottomNavClickPage(pagesNav.availability.name)} className='nav-link btn-href'>{<icons.calendar4weeks />}<span className="d-block navb-fs">Availability</span> </button>
+              <button onClick={() => bottomNavClickPage(pagesNav.appointments.name)} className='nav-link btn-href'><i className="bi bi-house"></i><span className="d-block navb-fs">Appointments</span> </button>
+              <button onClick={() => bottomNavClickPage(pagesNav.availability.name)} className='nav-link btn-href'><i className="bi bi-calendar-week"></i><span className="d-block navb-fs">Availability</span> </button>
               <button className='nav-link btn-href'><i className="bi bi-bar-chart"></i> <span className="d-block navb-fs">Stats</span> </button>
-              <button  onClick={() => bottomNavClickPage(pagesNav.settings.name)} className='nav-link btn-href'>{<icons.gear />}<span className="d-block navb-fs">Settings</span></button>
+              <button  onClick={() => bottomNavClickPage(pagesNav.settings.name)} className='nav-link btn-href'><i className="bi bi-gear"></i><span className="d-block navb-fs">Settings</span></button>
             </div>
           </nav>
        </footer>
