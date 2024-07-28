@@ -1,10 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  margin: 0; 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  
+  font-family: "Roboto", sans-serif !important;
+  font-weight: 300 !important;
+  font-style: normal !important;
 }
 
 .btn-href{
@@ -24,7 +27,7 @@ input{padding-top:12px!important;padding-bottom:12px!important}
   .schld-days-ofweek{display:flex;align-items:center;margin-bottom:12px}
   .schld-days-ofweek>label{flex:0 0 100px;margin-bottom:0}
   .schld-days-ofweek>input{flex:1;color:#00f!important}
-  .settingsj-sunmoon{display:flex;justify-content:space-between}
+  .settingsj-sunmoon{display:flex !important;justify-content:space-between}
   .pignose-calendar{width:100%!important;max-width:100%}
   
   .navb-fs{font-size:12px!important} 
