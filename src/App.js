@@ -1,7 +1,6 @@
 //import logo from './logo.svg'; 
 import React , { useState   }   from 'react';
 import {EventCalendar,WEEKDAYS,httpPost,icons } from "./functions.tsx";
-import 'bootstrap/dist/css/bootstrap.min.css'; 
 
 
 

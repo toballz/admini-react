@@ -7,6 +7,7 @@ import {
   startOfMonth,
 } from "date-fns";
 import React, { useState } from "react";  
+import { Col, Row } from "react-bootstrap";
 
 
 const domain="http://cocohairsignature.com",
@@ -71,12 +72,18 @@ export const EventCalendar = ({ events }: EventCalendarProps) => {
   });
 
   const startingDayIndex = getDay(firstDayOfMonth);
-  const [activeButton, setActiveButton] = useState(null);
+  const [scedulesBookedList, setBookedList] = useState([]);
+  const [activeCalendarButton, setActiveCalendarButton] = useState(null);
 
   const getthisDayAppointmentList =  async (buttonId,input: number) => {
-    setActiveButton(buttonId);
+    setActiveCalendarButton(buttonId);
     const httpResponse = await httpPost({'cros':"getterCross", 'getDatesAppointmentsSpecDate': "2", 'dateFrom': "20240729"});
      //alert(input);
+     if(httpResponse !== null){
+        const hfg=await httpResponse.json();
+        setBookedList(hfg);
+        console.log(hfg);
+     }
     
   };
    
@@ -85,6 +92,8 @@ export const EventCalendar = ({ events }: EventCalendarProps) => {
       <div className="mb-4">
         <h2>{format(currentDate, "MMMM yyyy")}</h2>
       </div>
+      
+      
       <div className="eventcalendar-grid">
         {WEEKDAYS.map((day) => {
           //name of week
@@ -92,10 +101,7 @@ export const EventCalendar = ({ events }: EventCalendarProps) => {
         })}
         {Array.from({ length: startingDayIndex }).map((_, index) => {
           //space not day of week in month
-          return (
-            <div key={`empty-${index}`}
-              className="border rounded-md p-2" />
-          );
+          return ( <div key={`empty-${index}`} className="border rounded-md p-2" /> );
         })}
         {daysInMonth.map((day, index) => {
           //day of week in month
@@ -103,12 +109,29 @@ export const EventCalendar = ({ events }: EventCalendarProps) => {
           const isEventy=events.includes(Number(dateKey));
           return (<div key={index}> 
                     <div onClick={() => isEventy?getthisDayAppointmentList(index,Number(dateKey)):()=>{}}>
-                        <div className={`border rounded-circle p-2 ${isToday(day)?"bg-warning text-light ":""}${!isEventy?"notactive ":""}eventcalendar-numdays${activeButton === index ? ' active' : ''}`}>{format(day, "d")}</div>
+                        <div className={`border rounded-circle p-2 ${isToday(day)?"bg-warning text-light ":""}${!isEventy?"notactive ":""}eventcalendar-numdays${activeCalendarButton === index ? ' active' : ''}`}>{format(day, "d")}</div>
                         {isEventy?<div key={index} className="eventcalendar-eventn"></div>:""}
                     </div>
                 </div>);
         })}
       </div>
+
+
+        <div className="mt-5"> {scedulesBookedList.map((appointment, index) => {
+          //day of week in month  
+          return (<div key={index}>
+                    <div   className="container d-flex flex-row align-items-center mb-4">
+                        <div style={{flex:'2',maxWidth:'120px'}}> <img src={appointment['imageUrl']} alt="Hair Style" /></div> 
+                        
+                        <div style={{flex:'7',overflow:'hidden',maxWidth:'90%'}} className="mx-3">Hair Style: {appointment['hairname']}</div>
+                        
+                        <div style={{flex:'1'}}>Order ID: {appointment['orderId']}</div>
+                        
+                    </div>
+                </div >);
+        })}
+        </div>
+      
     </div>
   );
 };
