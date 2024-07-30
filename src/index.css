@@ -47,3 +47,10 @@ input{padding-top:12px!important;padding-bottom:12px!important}
 .eventcalendar-numdays.notactive{background-color: #efefef;opacity: .34;border-color: transparent !important;}
 .eventcalendar-numdays.active{background-color: #6377eb;color:#fff}
 .eventcalendar-eventn{display: block;margin: auto; height:10px;width:10px;border-radius:50%;margin-top:3px;background-color: #5ee95e;}
+
+
+
+.modal.show{
+  opacity: 1;display: block;
+  padding-right: 21px;background-color: rgb(124 123 123 / 80%);
+}

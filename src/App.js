@@ -1,6 +1,6 @@
 //import logo from './logo.svg'; 
 import React , { useState   }   from 'react';
-import {EventCalendar,WEEKDAYS,httpPost,todayDate } from "./functions.tsx";
+import {EventCalendar,WEEKDAYS,httpPost,todayDate,ShowModal } from "./functions.tsx";
 import {format} from "date-fns";
 
 
@@ -8,16 +8,10 @@ import {format} from "date-fns";
 //
 //
 const pagesNav={
-  appointments:{
-    name:"appointments", array:[]
-  },
-  settings:{
-    name:"settings", array:{}
-  },
-  availability:{
-    name:"availability", array:{}
-  },
-} ;
+  appointments:"appointments" ,
+  settings:"settings",
+  availability:"availability" 
+}; 
 
 //
 //render app
@@ -26,14 +20,14 @@ const pagesNav={
 function App() {
   //
   const [showTabNavigation, setshowTabNavigation] = useState('firstpage');
-  const [availabilityInputs, setInputs] = useState({sunday: '', monday: '', tuesday: '', wednesday: '',thursday:'',friday:'', saturday: ''});
-  const [fromTodayDateFurther, setFromTodayDateFurther] = useState([]);
- //
+  const [availabilityInputs, setAvailabilityInputs] = useState( WEEKDAYS.reduce((acc, day) => ({ ...acc, [day]: '' }), {}));
+   const [fromTodayDateFurther, setFromTodayDateFurther] = useState([]);
+  const [ModalShowV, setModalShowV] = useState(null);
+  //
  //
  //***********************
   const bottomNavClickPage = async (divName) => {
-    if(divName===pagesNav.appointments.name){
-      
+    if(divName===pagesNav.appointments){
       const httpResponse = await httpPost({'cros': 'getterCross',
         'getDatesAppointmentsMoreThanDate': "2",
         'dateTo': format(todayDate, "yyyyMMdd")});
@@ -46,16 +40,16 @@ function App() {
       setFromTodayDateFurther(JSON.stringify(formattedDates));
      }
      //******************
-    }else if(divName===pagesNav.availability.name){
+    }else if(divName===pagesNav.availability){
       const httpResponse = await httpPost({'cros':"getterCross",'getweeklyStatic': "2",'had': "a"});
       if (httpResponse !== null) {
-        pagesNav.availability.array= await httpResponse.json();
+        const httpJson= await httpResponse.json();
         
         const updatedInputs = WEEKDAYS.reduce((acc, day) => ({
           ...acc,
-          [day.toLowerCase()]: pagesNav.availability.array[day.toLowerCase()],
+          [day.toLowerCase()]: httpJson[day.toLowerCase()],
         } ), {});
-        setInputs({
+        setAvailabilityInputs({
           ...availabilityInputs,
           ...updatedInputs
         });
@@ -75,7 +69,7 @@ function App() {
     const formattedValue = value.replace(/\D+/g, '') 
       .replace(/(\d{4})(?=\d)/g, '$1, '); // Add commas every 4 digits
   
-      setInputs({
+      setAvailabilityInputs({
         ...availabilityInputs,
         [name]: formattedValue,
       });
@@ -87,6 +81,8 @@ function App() {
   //**************
   return (
     <>
+    {ModalShowV !== null && <ModalShowV />}
+      
       <header>  </header>
 
       <main>
@@ -98,13 +94,13 @@ function App() {
               <h1>Welcome back</h1>
               <p>cocohairsignature.com</p>
               <br/>
-              <button className='btn btn-primary' onClick={() => bottomNavClickPage(pagesNav.appointments.name)} style={{width:'100%',padding:'12px'}}>View appointments</button>
+              <button className='btn btn-primary' onClick={() => bottomNavClickPage(pagesNav.appointments)} style={{width:'100%',padding:'12px'}}>View appointments</button>
             </div>
           </div>
         </section>
         }
 
-        {showTabNavigation === pagesNav.appointments.name &&
+        {showTabNavigation === pagesNav.appointments &&
         //page [appointments]
         <section  >
             <div className="container mt-5">
@@ -114,7 +110,7 @@ function App() {
             </div>
         </section>}
 
-        {showTabNavigation === pagesNav.settings.name &&
+        {showTabNavigation === pagesNav.settings &&
         //page [settings]
         <section  >
             <div className="container mt-5">
@@ -139,44 +135,39 @@ function App() {
 
 
 
-        {showTabNavigation === pagesNav.availability.name &&
+        {showTabNavigation === pagesNav.availability &&
         //availability
         <section>
             <div className="container mt-5">
                 <div className="container mt-5">
                     <h2>Weekly schedules</h2>
                     <p>Leave empty for unavailability (24hrs clock)</p>
+                    {WEEKDAYS.map((day, index) => (
+                      <div className="form-group schld-days-ofweek" key={day}>
+                          <label htmlFor={day.toLowerCase()}>{day}:</label>
+                          <input placeholder="0845, 1230, 1540, 2000, 0000" type="text"
+                            className="form-control" id={day.toLowerCase()}
+                            name={day.toLowerCase()} value={ availabilityInputs[day.toLowerCase()]} onChange={timeWriterOnchange}/>
+                      </div>
+                    ))}
 
-                    <div className="form-group schld-days-ofweek">
-                        <label htmlFor="sunday">Sunday:</label>
-                        <input placeholder="0845, 1230, 1540, 2000, 0000" type="text" className=" form-control" id="sunday" name="sunday" value={ availabilityInputs.sunday} onChange={timeWriterOnchange}/>
-                    </div>
-                    <div className="form-group schld-days-ofweek">
-                        <label htmlFor="monday">Monday:</label>
-                        <input placeholder="0845, 1230, 1540, 2000, 0000" type="text" className=" form-control" id="monday" name="monday" value={availabilityInputs.monday} onChange={timeWriterOnchange}/>
-                    </div>
-                    <div className="form-group schld-days-ofweek">
-                        <label htmlFor="tuesday">Tuesday:</label>
-                        <input placeholder="0845, 1230, 1540, 2000, 0000" type="text" className=" form-control" id="tuesday" name="tuesday" value={availabilityInputs.tuesday} onChange={timeWriterOnchange}/>
-                    </div>
-                    <div className="form-group schld-days-ofweek">
-                        <label htmlFor="wednesday">Wednesday:</label>
-                        <input placeholder="0845, 1230, 1540, 2000, 0000" type="text" className=" form-control" id="wednesday" name="wednesday" value={availabilityInputs.wednesday} onChange={timeWriterOnchange}/>
-                    </div>
-                    <div className="form-group schld-days-ofweek">
-                        <label htmlFor="thursday">Thursday:</label>
-                        <input placeholder="0845, 1230, 1540, 2000, 0000" type="text" className=" form-control" id="thursday" name="thursday" value={availabilityInputs.thursday} onChange={timeWriterOnchange}/>
-                    </div>
-                    <div className="form-group schld-days-ofweek">
-                        <label htmlFor="friday">Friday:</label>
-                        <input placeholder="0845, 1230, 1540, 2000, 0000" type="text" className=" form-control" id="friday" name="friday" value={availabilityInputs.friday} onChange={timeWriterOnchange}/>
-                    </div>
-                    <div className="form-group schld-days-ofweek">
-                        <label htmlFor="saturday">Saturday:</label>
-                        <input placeholder="0845, 1230, 1540, 2000, 0000" type="text" className="form-control" id="saturday" name="saturday" value={availabilityInputs.saturday} onChange={timeWriterOnchange}/>
-                    </div>
-
-                    <button type="submit" className="btn btn-primary w-100 mt-3 p-3 saveweeklyschedules" >Update Weekly</button>
+                    <button type="submit" className="btn btn-primary w-100 mt-3 p-3 saveweeklyschedules"
+                      onClick={()=>setModalShowV(() => () =>
+                        ShowModal({body:"Do you want to save the weekly schedules.",
+                          okbtn:"Save",okbtnFunc:()=>{
+                                WEEKDAYS.forEach(day => {
+                                    const dayKey = day.toLowerCase();
+                                    const inputValue = availabilityInputs[dayKey];
+                                    const matches = inputValue.match(/(\d{4})(?=, )/g);
+                                     if(!matches){
+                                      
+                                     }
+                                    alert(`${day}: ${inputValue} ${matches}`);
+                                  });
+                              
+                          },
+                          closebtn:"Close",closebtnFunc:()=>{setModalShowV(null)}})
+                      )}>Update Weekly</button>
 
                     <h2 className="mt-5">Override Schedules</h2>
                     <div className="mt-4" id="overridecalendar"></div>
@@ -186,7 +177,12 @@ function App() {
 
                     <ul className="list-group overrideitemslist"> </ul>
 
-                    <button type="submit" className="btn btn-primary w-100 mt-3 p-3 addoverridebtnclick">Add Override</button>
+                    <button type="submit" className="btn btn-primary w-100 mt-3 p-3 addoverridebtnclick"
+                      onClick={()=>setModalShowV(() => () =>
+                        ShowModal({body:"Do you want to override this date(s).",
+                          okbtn:"Save",okbtnFunc:()=>{alert();},
+                          closebtn:"Close",closebtnFunc:()=>{setModalShowV(null)}})
+                      )}>Add Override</button>
                 </div>
             </div>
         </section>
@@ -203,10 +199,10 @@ function App() {
        <footer style={{position: 'fixed',bottom: '0',left: '0',width: '100%'}}>
           <nav className="bg-light  navbar ">
             <div className='container'>
-              <button onClick={() => bottomNavClickPage(pagesNav.appointments.name)} className='nav-link btn-href'><i className="bi bi-house"></i><span className="d-block navb-fs">Appointments</span> </button>
-              <button onClick={() => bottomNavClickPage(pagesNav.availability.name)} className='nav-link btn-href'><i className="bi bi-calendar-week"></i><span className="d-block navb-fs">Availability</span> </button>
+              <button onClick={() => bottomNavClickPage(pagesNav.appointments)} className='nav-link btn-href'><i className="bi bi-house"></i><span className="d-block navb-fs">Appointments</span> </button>
+              <button onClick={() => bottomNavClickPage(pagesNav.availability)} className='nav-link btn-href'><i className="bi bi-calendar-week"></i><span className="d-block navb-fs">Availability</span> </button>
               <button className='nav-link btn-href'><i className="bi bi-bar-chart"></i> <span className="d-block navb-fs">Stats</span> </button>
-              <button  onClick={() => bottomNavClickPage(pagesNav.settings.name)} className='nav-link btn-href'><i className="bi bi-gear"></i><span className="d-block navb-fs">Settings</span></button>
+              <button  onClick={() => bottomNavClickPage(pagesNav.settings)} className='nav-link btn-href'><i className="bi bi-gear"></i><span className="d-block navb-fs">Settings</span></button>
             </div>
           </nav>
        </footer>
