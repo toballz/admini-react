@@ -30,7 +30,8 @@ function App() {
     if(divName===pagesNav.appointments){
       const httpResponse = await httpPost({'cros': 'getterCross',
         'getDatesAppointmentsMoreThanDate': "2",
-        'dateTo': format(todayDate, "yyyyMMdd")});
+        'dateTo': "20240707"});
+        //'dateTo': format(todayDate, "yyyyMMdd")});
         
      if(httpResponse !== null){
       const gasg=(await httpResponse.json());
@@ -106,7 +107,7 @@ function App() {
             <div className="container mt-5">
                 <h2 style={{textAlign:'center'}}>Upcoming Appointments</h2>
                 <EventCalendar
-              events={fromTodayDateFurther}/>
+              events={fromTodayDateFurther} setModalShowPass={setModalShowV}/>
             </div>
         </section>}
 
@@ -153,20 +154,20 @@ function App() {
 
                     <button type="submit" className="btn btn-primary w-100 mt-3 p-3 saveweeklyschedules"
                       onClick={()=>setModalShowV(() => () =>
-                        ShowModal({body:"Do you want to save the weekly schedules.",
+                        ShowModal({body:<>Do you want to save the weekly schedules.</>,
                           okbtn:"Save",okbtnFunc:()=>{
                                 WEEKDAYS.forEach(day => {
                                     const dayKey = day.toLowerCase();
                                     const inputValue = availabilityInputs[dayKey];
                                     const matches = inputValue.match(/(\d{4})(?=, )/g);
-                                     if(!matches){
+                                     if(matches || inputValue===""){
+                                      alert(`${day}: ${inputValue}`);
                                       
                                      }
-                                    alert(`${day}: ${inputValue} ${matches}`);
                                   });
                               
                           },
-                          closebtn:"Close",closebtnFunc:()=>{setModalShowV(null)}})
+                          closebtnFunc:()=>{setModalShowV(null)}})
                       )}>Update Weekly</button>
 
                     <h2 className="mt-5">Override Schedules</h2>
@@ -197,7 +198,7 @@ function App() {
 
 
        <footer style={{position: 'fixed',bottom: '0',left: '0',width: '100%'}}>
-          <nav className="bg-light  navbar ">
+          <nav className="bg-light navbar ">
             <div className='container'>
               <button onClick={() => bottomNavClickPage(pagesNav.appointments)} className='nav-link btn-href'><i className="bi bi-house"></i><span className="d-block navb-fs">Appointments</span> </button>
               <button onClick={() => bottomNavClickPage(pagesNav.availability)} className='nav-link btn-href'><i className="bi bi-calendar-week"></i><span className="d-block navb-fs">Availability</span> </button>
