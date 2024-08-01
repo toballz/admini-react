@@ -10,7 +10,8 @@ import {format} from "date-fns";
 const pagesNav={
   appointments:"appointments" ,
   settings:"settings",
-  availability:"availability" 
+  availability:"availability",
+  profile:"profile"
 }; 
 
 //
@@ -30,8 +31,8 @@ function App() {
     if(divName===pagesNav.appointments){
       const httpResponse = await httpPost({'cros': 'getterCross',
         'getDatesAppointmentsMoreThanDate': "2",
-        'dateTo': "20240707"});
-        //'dateTo': format(todayDate, "yyyyMMdd")});
+        //'dateTo': "20240707"});
+        'dateTo': format(todayDate, "yyyyMMdd")});
         
      if(httpResponse !== null){
       const gasg=(await httpResponse.json());
@@ -123,7 +124,7 @@ function App() {
                     <div className="list-group-item list-group-item-action settingsj-sunmoon" onClick={()=>{window.sharparp.push({ title: window.sharparp.option.title.href, value: "https://cocohairsignature.com/" }) }}><span>cocohairsignature.com </span><i className="bi bi-box-arrow-up-right"></i></div>
                     <br />
 
-                    <div className="list-group-item list-group-item-action">
+                    <div className="list-group-item list-group-item-action" onClick={()=>bottomNavClickPage(pagesNav.profile)}>
                         <i className="bi bi-person"></i> <span>Profile</span>
                       </div>
 
@@ -190,7 +191,18 @@ function App() {
         }
 
 
-
+        {showTabNavigation === pagesNav.profile &&
+          //profile page
+          <section className="container mt-5">
+            <div className='p-3 mb-2 text-light rounded-pill' style={{backgroundColor: '#4fa764' }}>Your account is active</div>
+            <div>
+              <input type="text" className='form-control mb-2' placeholder="Full Name" />
+              <input type="text" className='form-control mb-2' placeholder="Email" />
+              <input type="text" className='form-control mb-2' placeholder="Phone Number" />
+              <button type="text" placeholder="phoneNumebr" className="btn btn-primary">Save Profile</button>
+            </div>
+          </section>
+        }
 
 
 
