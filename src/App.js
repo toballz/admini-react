@@ -1,7 +1,13 @@
 //import logo from './logo.svg';
 import React, { useState } from "react";
-import { EventCalendar, WEEKDAYS, httpPost, todayDate } from "./functions.tsx";
-import { format } from "date-fns";
+import {
+  EventCalendar,
+  WEEKDAYS,
+  httpPost,
+  todayDate,
+  domain,
+} from "./functions.tsx";
+import { format, parse } from "date-fns";
 import { Toast, ToastContainer, Modal, Navbar, Nav } from "react-bootstrap";
 
 //
@@ -29,6 +35,12 @@ function App() {
   );
   const [fromTodayDateFurther, setFromTodayDateFurther] = useState([]);
 
+  //
+
+  const [scedulesBookedList, setBookedList] = useState([]);
+  const [appointmentActiveCalendarButton, setappointmentActiveCalendarButton] = useState(null);
+  const [overrideActiveCalendarButton, setoverrideActiveCalendarButton] = useState(null);
+  //
   const [showModal, setshowModal] = useState({
     visible: false,
     header: <>header xxxxxxxxxx</>,
@@ -90,8 +102,29 @@ function App() {
         });
       }
     }
-
     setshowTabNavigation(divName);
+  };
+  function copyPhoneEmail(phoneEmail, type) {
+    try {
+      navigator.clipboard.writeText(phoneEmail);
+      window.location.href = `${
+        type === "phone" ? "tel" : "mailto"
+      }:${phoneEmail}`;
+    } catch (e) {
+      navigator.clipboard.writeText(phoneEmail);
+    }
+  }
+  const getthisDayAppointmentList = async (buttonId, datetoget) => {
+    setappointmentActiveCalendarButton(buttonId);
+    const httpResponse = await httpPost({
+      cros: "getterCross",
+      getDatesAppointmentsSpecDate: "2",
+      dateFrom: "" + datetoget,
+    });
+    //alert(input);
+    if (httpResponse !== null) {
+      setBookedList(await httpResponse.json());
+    }
   };
   //
 
@@ -154,10 +187,190 @@ function App() {
           <section>
             <div className="container mt-5">
               <h2 style={{ textAlign: "center" }}>Upcoming Appointments</h2>
-              <EventCalendar
-                events={fromTodayDateFurther}
-                setShowModalPassArg={setshowModal}
-              />
+              <EventCalendar events={fromTodayDateFurther} blockedDates={['20240101-20500101']}
+               onclicked={getthisDayAppointmentList} activeCalendarButtonPass={{get:appointmentActiveCalendarButton,set:setappointmentActiveCalendarButton}}/>
+
+              <div className="mt-5"> 
+                {scedulesBookedList.map((appointment, index) => {
+                  //day of week in month
+                  return (
+                    <div
+                      key={index}
+                      className="mb-4"
+                      style={index !== 0 ? { borderTop: "1px solid #ccc" } : {}}
+                      onClick={async () => {
+                        const receiptHttpResopnse = await httpPost({
+                          cros: "getterCross",
+                          receiptIIinfo: appointment["orderId"],
+                          j: "1",
+                        });
+                        if (receiptHttpResopnse !== null) {
+                          const receiptHttp = await receiptHttpResopnse.json();
+                          setshowModal({
+                            visible: true,
+                            title: "Receipt",
+                            body: (
+                              <>
+                                <div className="modal-body">
+                                  <div className="w-100">
+                                    <img
+                                      className="w-100"
+                                      style={{
+                                        paddingLeft: "50px",
+                                        paddingRight: "50px",
+                                      }}
+                                      src={`${domain}/img/${receiptHttp["image"]}.jpg?a47`}
+                                      alt={receiptHttp["hairstyle"]}
+                                    />
+                                  </div>
+                                  <ul className="list-group mt-3 listeceiptul">
+                                    <li>
+                                      <span>Name</span>
+                                      <span>{receiptHttp["customername"]}</span>
+                                    </li>
+                                    <li>
+                                      <span>Phone</span>
+                                      <span
+                                        style={{ color: "blue" }}
+                                        onClick={() =>
+                                          copyPhoneEmail(
+                                            receiptHttp["phonne"],
+                                            "phone"
+                                          )
+                                        }
+                                      >
+                                        {receiptHttp["phonne"]}
+                                      </span>
+                                    </li>
+                                    <li>
+                                      <span>Email</span>
+                                      <span
+                                        style={{ color: "blue" }}
+                                        onClick={() => {
+                                          copyPhoneEmail(
+                                            receiptHttp["email"],
+                                            "email"
+                                          );
+                                        }}
+                                      >
+                                        {receiptHttp["email"]}
+                                      </span>
+                                    </li>
+                                    <li>
+                                      <span>Hairstyle</span>
+                                      <span>{receiptHttp["hairstyle"]}</span>
+                                    </li>
+                                    <li>
+                                      <span>Price</span>
+                                      <span>{receiptHttp["price"]}</span>
+                                    </li>
+                                    <li>
+                                      <span>Date</span>
+                                      <span style={{ color: "green" }}>
+                                        {format(
+                                          parse(
+                                            receiptHttp["date"],
+                                            "yyyyMMdd",
+                                            new Date()
+                                          ),
+                                          "eeee d MMMM yyyy"
+                                        )}
+                                      </span>
+                                    </li>
+                                    <li>
+                                      <span>Time</span>
+                                      <span style={{ color: "green" }}>
+                                        {format(receiptHttp["time"], "hh:mm a")}
+                                      </span>
+                                    </li>
+                                  </ul>
+                                </div>
+                              </>
+                            ),
+                            okText: "Delete this Appointment",
+                            okColor: "btn-danger",
+                            okFunc: () => {
+                              setshowModal({
+                                visible: true,
+                                body: (
+                                  <>
+                                    <div>
+                                      <b>Name: </b>
+                                      {receiptHttp["customername"]}
+                                    </div>
+                                    <div>
+                                      <b>Hairstyle: </b>
+                                      {receiptHttp["hairstyle"]}
+                                    </div>
+                                    <div>
+                                      <b>Phone: </b>
+                                      {receiptHttp["phonne"]}
+                                    </div>
+                                    <div>
+                                      <b>Email: </b>
+                                      {receiptHttp["email"]}
+                                    </div>
+                                  </>
+                                ),
+                                header:
+                                  "Delete this appointment? Are you sure?",
+                                okColor: "btn-danger",
+                                okText: "Delete this Appointment",
+                                okFunc: () => {
+                                  httpPost({
+                                    cros: "1",
+                                    deleteAppointment: "2",
+                                    ksy: appointment["orderId"],
+                                  }).then((deleteResponse) => {
+                                    if (deleteResponse !== null) {
+                                      setshowModal({ visible: false });
+                                      setTimeout(function () {
+                                        window.location.reload();
+                                      }, 1000);
+                                    }
+                                  });
+                                },
+                              });
+                            },
+                          });
+                        } else {
+                          setshowModal({
+                            visible: true,
+                            header: <>Error !!!</>,
+                            body: <>Error getting receipt.</>,
+                          });
+                        }
+                      }}
+                    >
+                      {//activeCalendarButton !== null && (
+                        <div className="container d-flex flex-row align-items-center mt-4">
+                          <div style={{ flex: "2", maxWidth: "120px" }}>
+                            {" "}
+                            <img
+                              src={appointment["imageUrl"]}
+                              alt={appointment["hairname"]}
+                            />
+                          </div>
+
+                          <div className="mx-3 appointmentbookedlist">
+                            <div className="appointmentbookedlist">
+                              {appointment["hairname"]}
+                            </div>
+                            <div className="mt-1 text-success">
+                              <b>{appointment["datetime"]}</b>
+                            </div>
+                          </div>
+
+                          <div style={{ flex: "1" }}>
+                            <i className="bi bi-eye"></i>
+                          </div>
+                        </div>
+                      //)
+                      }
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </section>
         )}
@@ -305,7 +518,8 @@ function App() {
               {showEditNavigation === pagesNav.edit_override && (
                 <>
                   <h2 className="mb-4">Block or Override Specific Dates</h2>
-                  <div className="mt-4" id="overridecalendar"></div>
+                  <div className="mt-4"><EventCalendar events={[]} onclicked={()=>alert("ok")}
+                      activeCalendarButtonPass={{get:overrideActiveCalendarButton,set:setoverrideActiveCalendarButton}}/></div>
                   <p className="mt-4">
                     Click a date and enter only the time(s) you will be
                     available for that date.
