@@ -157,7 +157,8 @@ export const EventCalendar = ({ events, setShowModalPassArg }: EventCalendarProp
                       </div>
                       </>,
                 okText: "Delete this Appointment",
-                okColor: "btn-danger", okFunc: () => {
+                okColor: "btn-danger",
+                okFunc: () => {
                   setShowModalPassArg({
                   visible:true,
                   body:<>
