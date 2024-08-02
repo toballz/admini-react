@@ -1,3 +1,4 @@
+//npm run build
 import {
   eachDayOfInterval,
   endOfMonth,

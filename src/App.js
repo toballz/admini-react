@@ -79,11 +79,11 @@ function App() {
       });
 
       if (httpResponse !== null) {
-        const gasg = await httpResponse.json();
-        const formattedDates = gasg.map((date) => {
-          return `${date.year}${date.month}${date.day}`;
+        const eventDatesBooked = await httpResponse.json();
+        const eventDatesBookedToInt   = eventDatesBooked.message.map((date) => {
+          return parseInt(date, 10);
         });
-        setFromTodayDateFurther(JSON.stringify(formattedDates));
+        setFromTodayDateFurther(eventDatesBookedToInt);
       }
       //******************
     } else if (divName === pagesNav.edit) {
