@@ -6,7 +6,7 @@ import {
   isToday,
   startOfMonth,
 } from "date-fns";
-import React, { useState } from "react";
+import React, {useState } from "react";
 
 export const domain = "http://cocohairsignature.com",
   apiM = domain + "/159742f243a05f0733d5d6497fd3f947/app/apim.php",
@@ -20,6 +20,7 @@ export const domain = "http://cocohairsignature.com",
     "Friday",
     "Saturday",
   ];
+ 
 
 export async function httpPost(params: { [key: string]: string }) {
   var formData = new URLSearchParams();

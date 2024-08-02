@@ -1,5 +1,5 @@
 //import logo from './logo.svg';
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   EventCalendar,
   WEEKDAYS,
@@ -38,8 +38,14 @@ function App() {
   //
 
   const [scedulesBookedList, setBookedList] = useState([]);
-  const [appointmentActiveCalendarButton, setappointmentActiveCalendarButton] = useState(null);
-  const [overrideActiveCalendarButton, setoverrideActiveCalendarButton] = useState(null);
+  const [
+    appointmentActiveCalendarButton,
+    setappointmentActiveCalendarButton,
+  ] = useState(null);
+  const [
+    overrideActiveCalendarButton,
+    setoverrideActiveCalendarButton,
+  ] = useState(null);
   //
   const [showModal, setshowModal] = useState({
     visible: false,
@@ -127,8 +133,6 @@ function App() {
     }
   };
   //
-
-  //
   //input preg 24hrs time
   const timeWriterOnchange = (e) => {
     const { name, value } = e.target;
@@ -144,9 +148,36 @@ function App() {
     });
   };
 
+  useEffect(() => {
+    const siOnline = () => setshowModal({ visible: false });
+    const siOffline = () =>
+      setshowModal({
+        visible: true,
+        title: "Warning !",
+        body: <>No internet connection !</>,
+        closeText: "Retry",
+        closeFunc: () => {},
+      });
+    window.addEventListener("online", siOnline);
+    window.addEventListener("offline", siOffline);
+    return () => {
+      window.removeEventListener("online", siOnline);
+      window.removeEventListener("offline", siOffline);
+    };
+  }, []);
+
   //
   //
   //
+  //**************
+  //**************
+  //**************
+  //**************
+  //**************
+  //**************
+  //**************
+  //**************
+  //**************
   //**************
   return (
     <>
@@ -187,10 +218,17 @@ function App() {
           <section>
             <div className="container mt-5">
               <h2 style={{ textAlign: "center" }}>Upcoming Appointments</h2>
-              <EventCalendar events={fromTodayDateFurther} blockedDates={['20240101-20500101']}
-               onclicked={getthisDayAppointmentList} activeCalendarButtonPass={{get:appointmentActiveCalendarButton,set:setappointmentActiveCalendarButton}}/>
+              <EventCalendar
+                events={fromTodayDateFurther}
+                blockedDates={["20240101-20500101"]}
+                onclicked={getthisDayAppointmentList}
+                activeCalendarButtonPass={{
+                  get: appointmentActiveCalendarButton,
+                  set: setappointmentActiveCalendarButton,
+                }}
+              />
 
-              <div className="mt-5"> 
+              <div className="mt-5">
                 {scedulesBookedList.map((appointment, index) => {
                   //day of week in month
                   return (
@@ -342,7 +380,8 @@ function App() {
                         }
                       }}
                     >
-                      {//activeCalendarButton !== null && (
+                      {
+                        //activeCalendarButton !== null && (
                         <div className="container d-flex flex-row align-items-center mt-4">
                           <div style={{ flex: "2", maxWidth: "120px" }}>
                             {" "}
@@ -365,7 +404,7 @@ function App() {
                             <i className="bi bi-eye"></i>
                           </div>
                         </div>
-                      //)
+                        //)
                       }
                     </div>
                   );
@@ -518,8 +557,16 @@ function App() {
               {showEditNavigation === pagesNav.edit_override && (
                 <>
                   <h2 className="mb-4">Block or Override Specific Dates</h2>
-                  <div className="mt-4"><EventCalendar events={[]} onclicked={()=>alert("ok")}
-                      activeCalendarButtonPass={{get:overrideActiveCalendarButton,set:setoverrideActiveCalendarButton}}/></div>
+                  <div className="mt-4">
+                    <EventCalendar
+                      events={[]}
+                      onclicked={() => alert("ok")}
+                      activeCalendarButtonPass={{
+                        get: overrideActiveCalendarButton,
+                        set: setoverrideActiveCalendarButton,
+                      }}
+                    />
+                  </div>
                   <p className="mt-4">
                     Click a date and enter only the time(s) you will be
                     available for that date.
