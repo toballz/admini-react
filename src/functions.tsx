@@ -21,8 +21,8 @@ export const domain = "http://cocohairsignature.com",
     "Friday",
     "Saturday",
   ];
- 
 
+ 
 export async function httpPost(params: { [key: string]: string }) {
   var formData = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {

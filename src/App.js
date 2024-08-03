@@ -8,7 +8,7 @@ import {
   domain,
 } from "./functions.tsx";
 import { format, parse } from "date-fns";
-import { Toast, ToastContainer, Modal, Navbar, Nav } from "react-bootstrap";
+import { Modal, Navbar, Nav } from "react-bootstrap";
 
 //
 //
@@ -80,7 +80,7 @@ function App() {
 
       if (httpResponse !== null) {
         const eventDatesBooked = await httpResponse.json();
-        const eventDatesBookedToInt   = eventDatesBooked.message.map((date) => {
+        const eventDatesBookedToInt = eventDatesBooked.message.map((date) => {
           return parseInt(date, 10);
         });
         setFromTodayDateFurther(eventDatesBookedToInt);
@@ -113,9 +113,10 @@ function App() {
   function copyPhoneEmail(phoneEmail, type) {
     try {
       navigator.clipboard.writeText(phoneEmail);
-      window.location.href = `${
-        type === "phone" ? "tel" : "mailto"
-      }:${phoneEmail}`;
+      window.sharparp.push({
+        title: window.sharparp.option.title.href,
+        value: (type === "phone" ? "tel" : "mailto") + ":" + phoneEmail,
+      });
     } catch (e) {
       navigator.clipboard.writeText(phoneEmail);
     }
@@ -187,12 +188,12 @@ function App() {
         {showTabNavigation === "firstpage" && (
           //first page
           <section>
-            <div className="mt-5"
+            <div
               style={{
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                height: "70vh",
+                height: "86vh",
                 textAlign: "center",
               }}
             >
@@ -415,7 +416,10 @@ function App() {
 
         {showTabNavigation === pagesNav.settings && (
           //page [settings]
-          <section className="d-flex align-items-center" style={{height: '75vh'}}>
+          <section
+            className="d-flex align-items-center"
+            style={{ height: "76vh" }}
+          >
             <div className="mt-5 w-100">
               <div className="list-group settingsj">
                 <div className="list-group-item list-group-item-action d-flex justify-content-between">
@@ -459,11 +463,19 @@ function App() {
                   <i className="bi bi-person"></i> <span>Profile</span>
                 </div>
 
-                <div className="list-group-item list-group-item-action" onClick={()=>{
+                <div
+                  className="list-group-item list-group-item-action"
+                  onClick={() => {
                     window.sharparp.push({
                       title: window.sharparp.option.title.setlogout,
-                      value: "https://stripe.com/",
-                    });}}>
+                      value: "signout",
+                    });
+                    window.sharparp.push({
+                      title: window.sharparp.option.title.toast,
+                       value: "You are signed out."
+                   });
+                  }}
+                >
                   <i className="bi bi-box-arrow-right"></i> Sign Out
                 </div>
               </div>
@@ -501,13 +513,17 @@ function App() {
               {showEditNavigation === pagesNav.edit_weekly && (
                 <>
                   <h2 className="text-center mb-4">Weekly schedules</h2>
-                  <p className="text-end">Leave empty for unavailability (24hrs clock)</p>
+                  <p className="text-center">
+                    Leave empty for unavailability (24hrs clock)
+                  </p>
                   {WEEKDAYS.map((day, index) => (
                     <div
                       className="form-group schld-days-ofweek d-flex mb-3 align-items-center"
                       key={day}
                     >
-                      <label htmlFor={day.toLowerCase()}>{day.substring(0,3)}:</label>
+                      <label htmlFor={day.toLowerCase()}>
+                        {day.substring(0, 3)}:
+                      </label>
                       <input
                         placeholder="0845, 1230, 1540, 2000, 0000"
                         type="text"
@@ -662,32 +678,30 @@ function App() {
         )}
       </main>
 
-      <footer
-        style={{ position: "fixed", bottom: "0", left: "0", width: "100%" }}
-      >
+      <footer>
         <nav className="bg-light navbar ">
           <div className="container">
             <button
               onClick={() => bottomNavClickPage(pagesNav.appointments)}
-              className="nav-link btn-href"
+              className="nav-link"
             >
               <i className="bi bi-house"></i>
               <span className="d-block navb-fs">Appointments</span>{" "}
             </button>
             <button
               onClick={() => bottomNavClickPage(pagesNav.edit)}
-              className="nav-link btn-href"
+              className="nav-link"
             >
               <i className="bi bi-pencil-square"></i>
               <span className="d-block navb-fs">Edits</span>{" "}
             </button>
-            <button className="nav-link btn-href">
+            <button className="nav-link">
               <i className="bi bi-bar-chart"></i>{" "}
               <span className="d-block navb-fs">Stats</span>{" "}
             </button>
             <button
               onClick={() => bottomNavClickPage(pagesNav.settings)}
-              className="nav-link btn-href"
+              className="nav-link"
             >
               <i className="bi bi-gear"></i>
               <span className="d-block navb-fs">Settings</span>
@@ -740,18 +754,6 @@ function App() {
           </Modal.Footer>
         </Modal>
       )}
-
-      <ToastContainer position={showToast.position} className="p-3">
-        <Toast
-          show={showToast.visible}
-          onClose={() => setshowToast({ visible: false })}
-          className="bg-success"
-          delay={showToast.delay}
-          autohide={showToast.autohide}
-        >
-          <Toast.Body>{showToast.body}</Toast.Body>
-        </Toast>
-      </ToastContainer>
     </>
   );
 }
