@@ -19,7 +19,7 @@ input{padding-top:12px!important;padding-bottom:12px!important}
 
 .bi{font-size:19px;padding-right:5px;padding-left:5px}
 
-   .schld-days-ofweek>label{flex:0 0 100px;margin-bottom:0}
+   .schld-days-ofweek>label{flex:0 0 50px;margin-bottom:0}
   .schld-days-ofweek>input{flex:1;color:#00f!important}
     
 

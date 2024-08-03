@@ -81,10 +81,10 @@ export const EventCalendar = ({
   };
 
   return (
-    <div className="container mx-auto rounded p-4 eventcalendar-parent">
+    <div className="mx-auto rounded p-2 pb-3 eventcalendar-parent">
       <div className="mb-4 d-flex flex-row justify-content-between">
         <button
-          className="btn"
+          className="btn p-1"
           onClick={() => {
             setfirstDayOfMonth(startOfMonth(getNextorPreviousMonthDate(-1)));
             setlastDayOfMonth(endOfMonth(getNextorPreviousMonthDate(-1)));
@@ -95,7 +95,7 @@ export const EventCalendar = ({
         </button>
         <span className="fw-bold">{format(firstDayOfMonth, "MMMM yyyy")}</span>
         <button
-          className="btn"
+          className="btn p-1"
           onClick={() => {
             setfirstDayOfMonth(startOfMonth(getNextorPreviousMonthDate(1)));
             setlastDayOfMonth(endOfMonth(getNextorPreviousMonthDate(1)));
@@ -118,7 +118,7 @@ export const EventCalendar = ({
         {Array.from({ length: getDay(firstDayOfMonth) }).map((_, index) => {
           //space not day of week in month
           return (
-            <div key={`empty-${index}`} className="border rounded-md p-2" />
+            <div key={`empty-${index}`}><div className="border rounded-circle p-2 notactive eventcalendar-numdays"></div></div>
           );
         })}
         {daysInMonth.map((day, index) => {

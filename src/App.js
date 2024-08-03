@@ -215,7 +215,7 @@ function App() {
         {showTabNavigation === pagesNav.appointments && (
           //page [appointments]
           <section>
-            <div className="container mt-5">
+            <div className="mt-5">
               <h2 style={{ textAlign: "center" }}>Upcoming Appointments</h2>
               <EventCalendar
                 events={fromTodayDateFurther}
@@ -381,7 +381,7 @@ function App() {
                     >
                       {
                         //activeCalendarButton !== null && (
-                        <div className="container d-flex flex-row align-items-center mt-4">
+                        <div className="d-flex flex-row align-items-center mt-4">
                           <div style={{ flex: "2", maxWidth: "120px" }}>
                             {" "}
                             <img
@@ -415,8 +415,8 @@ function App() {
 
         {showTabNavigation === pagesNav.settings && (
           //page [settings]
-          <section>
-            <div className="container mt-5">
+          <section className="d-flex align-items-center" style={{height: '75vh'}}>
+            <div className="mt-5 w-100">
               <div className="list-group settingsj">
                 <div className="list-group-item list-group-item-action d-flex justify-content-between">
                   <span>
@@ -459,7 +459,11 @@ function App() {
                   <i className="bi bi-person"></i> <span>Profile</span>
                 </div>
 
-                <div className="list-group-item list-group-item-action signoutClick">
+                <div className="list-group-item list-group-item-action" onClick={()=>{
+                    window.sharparp.push({
+                      title: window.sharparp.option.title.setlogout,
+                      value: "https://stripe.com/",
+                    });}}>
                   <i className="bi bi-box-arrow-right"></i> Sign Out
                 </div>
               </div>
@@ -493,17 +497,17 @@ function App() {
                 </Nav>
               </Navbar.Collapse>
             </Navbar>
-            <div className="container mt-2">
+            <div className="mt-2">
               {showEditNavigation === pagesNav.edit_weekly && (
                 <>
                   <h2 className="text-center mb-4">Weekly schedules</h2>
-                  <p>Leave empty for unavailability (24hrs clock)</p>
+                  <p className="text-end">Leave empty for unavailability (24hrs clock)</p>
                   {WEEKDAYS.map((day, index) => (
                     <div
                       className="form-group schld-days-ofweek d-flex mb-3 align-items-center"
                       key={day}
                     >
-                      <label htmlFor={day.toLowerCase()}>{day}:</label>
+                      <label htmlFor={day.toLowerCase()}>{day.substring(0,3)}:</label>
                       <input
                         placeholder="0845, 1230, 1540, 2000, 0000"
                         type="text"
@@ -609,7 +613,7 @@ function App() {
 
         {showTabNavigation === pagesNav.profile && (
           //profile page
-          <section className="container mt-5">
+          <section className="mt-5">
             <div
               className="p-3 mb-2 text-light rounded-pill shadow-sm d-flex justify-content-between"
               style={{ backgroundColor: "rgb(98 228 151 / 67%)" }}
