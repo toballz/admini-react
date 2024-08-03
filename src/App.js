@@ -187,8 +187,7 @@ function App() {
         {showTabNavigation === "firstpage" && (
           //first page
           <section>
-            <div
-              className="container mt-5"
+            <div className="mt-5"
               style={{
                 display: "flex",
                 justifyContent: "center",
