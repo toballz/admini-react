@@ -565,25 +565,29 @@ function App() {
                           );
                           setshowModal({
                             visible: true,
-                            header: "Override this date",
+                            header: "Override this date !",
                             body: (
                               <>
-                                Do you want to override this date.
+                                <>Do you want to override this date ?</>
+                                <br /><br />
+                                <b>Date: </b>{format(da, "eeee d MMMM yyyy")}
                                 <br />
-                                <b>Date:</b> {format(da, "eeee d MMMM yyyy")}
                                 <br />
+                                <b>From: </b>
+                                <>
+                                  {overrideInput === ""
+                                    ? "Not Available"
+                                    : weeklyAvailabilityInputs[
+                                        format(da, "eeee").toLowerCase()
+                                      ]}
+                                </>
                                 <br />
-                                <b>From:</b>{" "}
-                                {
-                                  weeklyAvailabilityInputs[
-                                    format(da, "eeee").toLowerCase()
-                                  ]
-                                }
-                                <br />
-                                <b>To:</b>{" "}
-                                {overrideInput === ""
-                                  ? "No Available"
-                                  : overrideInput}
+                                <b>To: </b>
+                                <>
+                                  {overrideInput === ""
+                                    ? "Not Available"
+                                    : overrideInput}
+                                </>
                               </>
                             ),
                             okbtn: "Save",
@@ -596,7 +600,7 @@ function App() {
                           setshowModal({
                             visible: true,
                             body: <>Type in valid 24hrs time.</>,
-                            header: "Error !!!",
+                            header: "Error !!",
                           });
                         }
                       } else {
