@@ -7,7 +7,7 @@ import {
   isToday,
   startOfMonth,
 } from "date-fns";
-import React, {useState } from "react";
+import React, { useState } from "react";
 
 export const domain = "http://cocohairsignature.com",
   apiM = domain + "/159742f243a05f0733d5d6497fd3f947/app/apim.php",
@@ -22,7 +22,6 @@ export const domain = "http://cocohairsignature.com",
     "Saturday",
   ];
 
- 
 export async function httpPost(params: { [key: string]: string }) {
   var formData = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
@@ -48,19 +47,18 @@ export async function httpPost(params: { [key: string]: string }) {
 interface EventCalendarProps {
   events: number[];
   onclicked;
-  activeCalendarButtonPass;
   blockedDates;
 }
 export const EventCalendar = ({
   events,
   onclicked,
-  activeCalendarButtonPass,
   blockedDates = ["20240101"],
 }: EventCalendarProps) => {
   const [firstDayOfMonth, setfirstDayOfMonth] = useState(
     startOfMonth(todayDate)
   );
   const [lastDayOfMonth, setlastDayOfMonth] = useState(endOfMonth(todayDate));
+  const [activeDayClicked, setactiveDayClicked] = useState<number | null>(null);
 
   const daysInMonth = eachDayOfInterval({
     start: firstDayOfMonth,
@@ -88,7 +86,7 @@ export const EventCalendar = ({
           onClick={() => {
             setfirstDayOfMonth(startOfMonth(getNextorPreviousMonthDate(-1)));
             setlastDayOfMonth(endOfMonth(getNextorPreviousMonthDate(-1)));
-            activeCalendarButtonPass.set(null);
+            setactiveDayClicked(null);
           }}
         >
           <i className="bi bi-caret-left"></i>
@@ -99,7 +97,7 @@ export const EventCalendar = ({
           onClick={() => {
             setfirstDayOfMonth(startOfMonth(getNextorPreviousMonthDate(1)));
             setlastDayOfMonth(endOfMonth(getNextorPreviousMonthDate(1)));
-            activeCalendarButtonPass.set(null);
+            setactiveDayClicked(null);
           }}
         >
           <i className="bi bi-caret-right"></i>
@@ -118,7 +116,9 @@ export const EventCalendar = ({
         {Array.from({ length: getDay(firstDayOfMonth) }).map((_, index) => {
           //space not day of week in month
           return (
-            <div key={`empty-${index}`}><div className="border rounded-circle p-2 notactive eventcalendar-numdays"></div></div>
+            <div key={`empty-${index}`}>
+              <div className="border rounded-circle p-2 notactive eventcalendar-numdays"></div>
+            </div>
           );
         })}
         {daysInMonth.map((day, index) => {
@@ -148,20 +148,18 @@ export const EventCalendar = ({
           return (
             <div
               key={index}
-              onClick={() =>
-                isNotActive
-                  ? ()=>{return;}
-                  : onclicked(index, Number(dateKey))
-                       
-
-                       
-              }
+              onClick={() => {
+                if (!isNotActive) {//is active 
+                  setactiveDayClicked(index);
+                  onclicked(index, Number(dateKey));
+                }
+              }}
             >
               <div
                 className={`border rounded-circle p-2 ${
                   isToday(day) ? "bg-warning text-light " : ""
                 }${isNotActive ? "notactive " : ""}eventcalendar-numdays${
-                  activeCalendarButtonPass.get === index ? " active" : ""
+                  activeDayClicked === index ? " active" : ""
                 }`}
               >
                 {format(day, "d")}

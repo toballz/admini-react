@@ -38,15 +38,7 @@ function App() {
   //
 
   const [scedulesBookedList, setBookedList] = useState([]);
-  const [
-    appointmentActiveCalendarButton,
-    setappointmentActiveCalendarButton,
-  ] = useState(null);
-  const [
-    overrideActiveCalendarButton,
-    setoverrideActiveCalendarButton,
-  ] = useState(null);
-  //
+ //
 
   const [showModal, setshowModal] = useState({
     visible: false,
@@ -146,19 +138,7 @@ function App() {
     } catch (e) {
       navigator.clipboard.writeText(phoneEmail);
     }
-  }
-  const getthisDayAppointmentList = async (buttonId, datetoget) => {
-    setappointmentActiveCalendarButton(buttonId);
-    const httpResponse = await httpPost({
-      cros: "getterCross",
-      getDatesAppointmentsSpecDate: "2",
-      dateFrom: "" + datetoget,
-    });
-    //alert(input);
-    if (httpResponse !== null) {
-      setBookedList(await httpResponse.json());
-    }
-  };
+  } 
   //
   //input preg 24hrs time
   const timeWriterOnchange = (e) => {
@@ -250,11 +230,17 @@ function App() {
               <EventCalendar
                 events={fromTodayDateFurther}
                 blockedDates={["20240101-20500101"]}
-                onclicked={getthisDayAppointmentList}
-                activeCalendarButtonPass={{
-                  get: appointmentActiveCalendarButton,
-                  set: setappointmentActiveCalendarButton,
-                }}
+                onclicked={ async (buttonId, datetoget) => { 
+                  const httpResponse = await httpPost({
+                    cros: "getterCross",
+                    getDatesAppointmentsSpecDate: "2",
+                    dateFrom: "" + datetoget,
+                  });
+                  //alert(input);
+                  if (httpResponse !== null) {
+                    setBookedList(await httpResponse.json());
+                  }
+                }} 
               />
 
               <div className="mt-5">
@@ -532,11 +518,7 @@ function App() {
                   <div className="mt-2">
                     <EventCalendar
                       events={[]}
-                      onclicked={() => alert("ok")}
-                      activeCalendarButtonPass={{
-                        get: overrideActiveCalendarButton,
-                        set: setoverrideActiveCalendarButton,
-                      }}
+                      onclicked={(buttonid,date) => alert(`${buttonid}-${date}`)} 
                     />
                   </div>
                   <p className="mt-4">
@@ -635,10 +617,6 @@ function App() {
                     window.sharparp.push({
                       title: window.sharparp.option.title.setlogout,
                       value: "signout",
-                    });
-                    window.sharparp.push({
-                      title: window.sharparp.option.title.toast,
-                      value: "You are signed out.",
                     });
                   }}
                 >
