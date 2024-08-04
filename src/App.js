@@ -30,15 +30,17 @@ function App() {
   const [showEditNavigation, setshowEditNavigation] = useState(
     pagesNav.edit_weekly
   );
-  const [availabilityInputs, setAvailabilityInputs] = useState(
+  const [weeklyAvailabilityInputs, setweeklyAvailabilityInputs] = useState(
     WEEKDAYS.reduce((acc, day) => ({ ...acc, [day.toLowerCase()]: "" }), {})
   );
+  const [calenderDaysClick, setcalenderDaysClick] = useState(null);
+  const [overrideInput, setoverrideInput] = useState("");
   const [fromTodayDateFurther, setFromTodayDateFurther] = useState([]);
 
   //
 
   const [scedulesBookedList, setBookedList] = useState([]);
- //
+  //
 
   const [showModal, setshowModal] = useState({
     visible: false,
@@ -120,8 +122,8 @@ function App() {
           }),
           {}
         );
-        setAvailabilityInputs({
-          ...availabilityInputs,
+        setweeklyAvailabilityInputs({
+          ...weeklyAvailabilityInputs,
           ...updatedInputs,
         });
       }
@@ -138,21 +140,24 @@ function App() {
     } catch (e) {
       navigator.clipboard.writeText(phoneEmail);
     }
-  } 
+  }
   //
   //input preg 24hrs time
-  const timeWriterOnchange = (e) => {
+  const timeWriterInputOnchange = (e) => {
     const { name, value } = e.target;
 
     // Format the value as comma-separated values
     const formattedValue = value
       .replace(/\D+/g, "")
       .replace(/(\d{4})(?=\d)/g, "$1, "); // Add commas every 4 digits
-
-    setAvailabilityInputs({
-      ...availabilityInputs,
-      [name]: formattedValue,
-    });
+    if (name === "updateoverrideInput") {
+      setoverrideInput(formattedValue);
+    } else {
+      setweeklyAvailabilityInputs({
+        ...weeklyAvailabilityInputs,
+        [name]: formattedValue,
+      });
+    }
   };
 
   useEffect(() => {
@@ -230,7 +235,7 @@ function App() {
               <EventCalendar
                 events={fromTodayDateFurther}
                 blockedDates={["20240101-20500101"]}
-                onclicked={ async (buttonId, datetoget) => { 
+                onclicked={async (buttonId, datetoget) => {
                   const httpResponse = await httpPost({
                     cros: "getterCross",
                     getDatesAppointmentsSpecDate: "2",
@@ -240,7 +245,7 @@ function App() {
                   if (httpResponse !== null) {
                     setBookedList(await httpResponse.json());
                   }
-                }} 
+                }}
               />
 
               <div className="mt-5">
@@ -299,12 +304,12 @@ function App() {
                                       <span>Email</span>
                                       <span
                                         style={{ color: "blue" }}
-                                        onClick={() => {
+                                        onClick={() =>
                                           copyPhoneEmail(
                                             receiptHttp["email"],
                                             "email"
-                                          );
-                                        }}
+                                          )
+                                        }
                                       >
                                         {receiptHttp["email"]}
                                       </span>
@@ -342,7 +347,7 @@ function App() {
                             ),
                             okText: "Delete this Appointment",
                             okColor: "btn-danger",
-                            okFunc: () => {
+                            okFunc: () =>
                               setshowModal({
                                 visible: true,
                                 body: (
@@ -388,8 +393,7 @@ function App() {
                                     }
                                   });
                                 },
-                              });
-                            },
+                              }),
                           });
                         } else {
                           setshowModal({
@@ -458,8 +462,8 @@ function App() {
                         className="shadow-sm form-control"
                         id={day.toLowerCase()}
                         name={day.toLowerCase()}
-                        value={availabilityInputs[day.toLowerCase()]}
-                        onChange={timeWriterOnchange}
+                        value={weeklyAvailabilityInputs[day.toLowerCase()]}
+                        onChange={timeWriterInputOnchange}
                       />
                     </div>
                   ))}
@@ -476,7 +480,7 @@ function App() {
                           let err = false;
                           WEEKDAYS.forEach((day) => {
                             const dayKey = day.toLowerCase();
-                            const inputValue = availabilityInputs[dayKey];
+                            const inputValue = weeklyAvailabilityInputs[dayKey];
                             const matches =
                               inputValue.match(/^(\d{4})(, \d{4})*$/) || false;
                             if (!matches && inputValue !== "") {
@@ -491,16 +495,20 @@ function App() {
                               header: "Error !!!",
                             });
                           } else {
-                             const updateweeklyResponse = httpPost({cros: 'getterCross',
-                                updatesWeekly: JSON.stringify(availabilityInputs),
-                                ajr: 'a'});
-                                if(updateweeklyResponse !== null){
-                                  setshowModal({visible:false});
-                                  window.sharparp.push({
-                                    title: window.sharparp.option.title.toast,
-                                    value: "Your weekly schedule has been updated.",
-                                  });
-                                }
+                            const updateweeklyResponse = httpPost({
+                              cros: "getterCross",
+                              updatesWeekly: JSON.stringify(
+                                weeklyAvailabilityInputs
+                              ),
+                              ajr: "a",
+                            });
+                            if (updateweeklyResponse !== null) {
+                              setshowModal({ visible: false });
+                              window.sharparp.push({
+                                title: window.sharparp.option.title.toast,
+                                value: "Your weekly schedule has been updated.",
+                              });
+                            }
                           }
                         },
                       })
@@ -518,7 +526,7 @@ function App() {
                   <div className="mt-2">
                     <EventCalendar
                       events={[]}
-                      onclicked={(buttonid,date) => alert(`${buttonid}-${date}`)} 
+                      onclicked={(buttonid, date) => setcalenderDaysClick(date)}
                     />
                   </div>
                   <p className="mt-4">
@@ -531,10 +539,12 @@ function App() {
 
                   <input
                     type="text"
-                    placeholder="0920, 1230, 1400,1845"
+                    placeholder="0920, 1230, 1400, 1845"
                     className="text-success form-control mb-2 shadow-sm"
                     id="updateoverride"
-                    name="updateoverride"
+                    value={overrideInput}
+                    name="updateoverrideInput"
+                    onChange={timeWriterInputOnchange}
                   />
 
                   <ul className="list-group overrideitemslist"> </ul>
@@ -542,17 +552,62 @@ function App() {
                   <button
                     type="submit"
                     className="shadow-sm btn btn-primary w-100 mt-3 p-3 addoverridebtnclick"
-                    onClick={() =>
-                      setshowModal({
-                        visible: true,
-                        body: "Do you want to override this date(s).",
-                        okbtn: "Save",
-                        okbtnFunc: () => {
-                          alert();
-                        },
-                        closeText: "Close",
-                      })
-                    }
+                    onClick={() => {
+                      if (calenderDaysClick !== null) {
+                        if (
+                          overrideInput.match(/^(\d{4})(, \d{4})*$/) ||
+                          overrideInput === ""
+                        ) {
+                          const da = parse(
+                            "" + calenderDaysClick,
+                            "yyyyMMdd",
+                            new Date()
+                          );
+                          setshowModal({
+                            visible: true,
+                            header: "Override this date",
+                            body: (
+                              <>
+                                Do you want to override this date.
+                                <br />
+                                <b>Date:</b> {format(da, "eeee d MMMM yyyy")}
+                                <br />
+                                <br />
+                                <b>From:</b>{" "}
+                                {
+                                  weeklyAvailabilityInputs[
+                                    format(da, "eeee").toLowerCase()
+                                  ]
+                                }
+                                <br />
+                                <b>To:</b>{" "}
+                                {overrideInput === ""
+                                  ? "No Available"
+                                  : overrideInput}
+                              </>
+                            ),
+                            okbtn: "Save",
+                            okFunc: () => {
+                              alert();
+                            },
+                            okText: "Override",
+                          });
+                        } else {
+                          setshowModal({
+                            visible: true,
+                            body: <>Type in valid 24hrs time.</>,
+                            header: "Error !!!",
+                          });
+                        }
+                      } else {
+                        setshowModal({
+                          visible: true,
+                          header: "Override this date",
+                          body: "Make sure to select a date to override.",
+                          closeText: "OK",
+                        });
+                      }
+                    }}
                   >
                     Add Override
                   </button>
@@ -580,24 +635,24 @@ function App() {
                 <br />
                 <div
                   className="list-group-item list-group-item-action d-flex justify-content-between"
-                  onClick={() => {
+                  onClick={() =>
                     window.sharparp.push({
                       title: window.sharparp.option.title.href,
                       value: "https://stripe.com/",
-                    });
-                  }}
+                    })
+                  }
                 >
                   <span>View payments - stripe.com </span>
                   <i className="bi bi-box-arrow-up-right"></i>
                 </div>
                 <div
                   className="list-group-item list-group-item-action d-flex justify-content-between"
-                  onClick={() => {
+                  onClick={() =>
                     window.sharparp.push({
                       title: window.sharparp.option.title.href,
                       value: "https://cocohairsignature.com/",
-                    });
-                  }}
+                    })
+                  }
                 >
                   <span>cocohairsignature.com </span>
                   <i className="bi bi-box-arrow-up-right"></i>
@@ -613,12 +668,12 @@ function App() {
 
                 <div
                   className="list-group-item list-group-item-action"
-                  onClick={() => {
+                  onClick={() =>
                     window.sharparp.push({
                       title: window.sharparp.option.title.setlogout,
                       value: "signout",
-                    });
-                  }}
+                    })
+                  }
                 >
                   <i className="bi bi-box-arrow-right"></i> Sign Out
                 </div>
@@ -728,12 +783,10 @@ function App() {
           <Modal.Footer>
             <button
               className="btn btn-secondary"
-              onClick={
+              onClick={() =>
                 showModal.closeFunc
-                  ? () => showModal.closeFunc()
-                  : () => {
-                      setshowModal({ show: false });
-                    }
+                  ? showModal.closeFunc()
+                  : setshowModal({ show: false })
               }
             >
               {showModal.closeText ? showModal.closeText : <>Close</>}

@@ -51,7 +51,7 @@ interface EventCalendarProps {
 }
 export const EventCalendar = ({
   events,
-  onclicked,
+  onclicked ,
   blockedDates = ["20240101"],
 }: EventCalendarProps) => {
   const [firstDayOfMonth, setfirstDayOfMonth] = useState(
