@@ -8,7 +8,7 @@ import {
   domain,
 } from "./functions.tsx";
 import { format, parse } from "date-fns";
-import { Modal, Navbar, Nav } from "react-bootstrap";
+import { Modal, Navbar, Dropdown } from "react-bootstrap";
 
 //
 //
@@ -31,7 +31,7 @@ function App() {
     pagesNav.edit_weekly
   );
   const [availabilityInputs, setAvailabilityInputs] = useState(
-    WEEKDAYS.reduce((acc, day) => ({ ...acc, [day]: "" }), {})
+    WEEKDAYS.reduce((acc, day) => ({ ...acc, [day.toLowerCase()]: "" }), {})
   );
   const [fromTodayDateFurther, setFromTodayDateFurther] = useState([]);
 
@@ -47,6 +47,7 @@ function App() {
     setoverrideActiveCalendarButton,
   ] = useState(null);
   //
+
   const [showModal, setshowModal] = useState({
     visible: false,
     header: <>header xxxxxxxxxx</>,
@@ -57,19 +58,16 @@ function App() {
     okColor: "#xxxx",
     okFunc: () => {},
   });
-  const [showToast, setshowToast] = useState({
-    visible: true,
-    body: <>Body xxxxxxxx</>,
-    backgroundColor: "",
-    closeFunc: () => {},
-    position: "bottom-end",
-    delay: 1600,
-    autohide: true,
+  const [headerNav, setheaderNav] = useState({
+    left: <></>,
+    center: <></>,
+    right: <></>,
   });
   //
   //
   //***********************
   const bottomNavClickPage = async (divName) => {
+    setheaderNav({ left: null, center: null, right: null });
     if (divName === pagesNav.appointments) {
       const httpResponse = await httpPost({
         cros: "getterCross",
@@ -87,6 +85,34 @@ function App() {
       }
       //******************
     } else if (divName === pagesNav.edit) {
+      setheaderNav({
+        right: (
+          <Dropdown>
+            <Dropdown.Toggle
+              as="div"
+              bsPrefix="custom-toggle"
+              variant="transparent"
+            >
+              {" "}
+              <i className="bi bi-three-dots-vertical"></i>{" "}
+            </Dropdown.Toggle>
+
+            <Dropdown.Menu align="end" className="p-2 fs-7">
+              <Dropdown.Item
+                onClick={() => setshowEditNavigation(pagesNav.edit_weekly)}
+              >
+                Weekly Schedules
+              </Dropdown.Item>
+              <hr className="m-1" />
+              <Dropdown.Item
+                onClick={() => setshowEditNavigation(pagesNav.edit_override)}
+              >
+                Override Specific Dates
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+        ),
+      });
       const httpResponse = await httpPost({
         cros: "getterCross",
         getweeklyStatic: "2",
@@ -182,7 +208,13 @@ function App() {
   //**************
   return (
     <>
-      <header> </header>
+      <header className="container">
+        <Navbar expand="lg">
+          <div>{headerNav.left && headerNav.left}</div>
+          <div>{headerNav.center && headerNav.center}</div>
+          <div>{headerNav.right && headerNav.right}</div>
+        </Navbar>
+      </header>
 
       <main className="container">
         {showTabNavigation === "firstpage" && (
@@ -190,12 +222,9 @@ function App() {
           <section>
             <div
               style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
                 height: "86vh",
-                textAlign: "center",
               }}
+              className="text-center d-flex justify-content-center align-items-center"
             >
               <div>
                 <h1>Welcome back</h1>
@@ -217,7 +246,7 @@ function App() {
           //page [appointments]
           <section>
             <div className="mt-5">
-              <h2 style={{ textAlign: "center" }}>Upcoming Appointments</h2>
+              <h2 className="text-center">Upcoming Appointments</h2>
               <EventCalendar
                 events={fromTodayDateFurther}
                 blockedDates={["20240101-20500101"]}
@@ -361,6 +390,11 @@ function App() {
                                     ksy: appointment["orderId"],
                                   }).then((deleteResponse) => {
                                     if (deleteResponse !== null) {
+                                      window.sharparp.push({
+                                        title:
+                                          window.sharparp.option.title.toast,
+                                        value: "Appointment has been deleted.",
+                                      });
                                       setshowModal({ visible: false });
                                       setTimeout(function () {
                                         window.location.reload();
@@ -410,6 +444,138 @@ function App() {
                   );
                 })}
               </div>
+            </div>
+          </section>
+        )}
+
+        {showTabNavigation === pagesNav.edit && (
+          //edits
+          <section>
+            <div className="mt-4">
+              {showEditNavigation === pagesNav.edit_weekly && (
+                <>
+                  <h2 className="text-center mb-4">Weekly schedules</h2>
+                  <p className="text-center">
+                    Leave empty for unavailability (24hrs clock)
+                  </p>
+                  {WEEKDAYS.map((day, index) => (
+                    <div
+                      className="form-group schld-days-ofweek d-flex mb-3 align-items-center"
+                      key={day}
+                    >
+                      <label htmlFor={day.toLowerCase()}>
+                        {day.substring(0, 3)}:
+                      </label>
+                      <input
+                        placeholder="0845, 1230, 1540, 2000, 0000"
+                        type="text"
+                        className="shadow-sm form-control"
+                        id={day.toLowerCase()}
+                        name={day.toLowerCase()}
+                        value={availabilityInputs[day.toLowerCase()]}
+                        onChange={timeWriterOnchange}
+                      />
+                    </div>
+                  ))}
+
+                  <button
+                    type="submit"
+                    className="shadow-sm btn btn-primary w-100 mt-3 p-3 saveweeklyschedules"
+                    onClick={() =>
+                      setshowModal({
+                        visible: true,
+                        body: <>Do you want to save this weekly schedules.</>,
+                        okText: "Save",
+                        okFunc: () => {
+                          let err = false;
+                          WEEKDAYS.forEach((day) => {
+                            const dayKey = day.toLowerCase();
+                            const inputValue = availabilityInputs[dayKey];
+                            const matches =
+                              inputValue.match(/^(\d{4})(, \d{4})*$/) || false;
+                            if (!matches && inputValue !== "") {
+                              err = `Input valid dates for ${dayKey}`;
+                            }
+                          });
+
+                          if (err !== false) {
+                            setshowModal({
+                              visible: true,
+                              body: <>{err}</>,
+                              header: "Error !!!",
+                            });
+                          } else {
+                             const updateweeklyResponse = httpPost({cros: 'getterCross',
+                                updatesWeekly: JSON.stringify(availabilityInputs),
+                                ajr: 'a'});
+                                if(updateweeklyResponse !== null){
+                                  setshowModal({visible:false});
+                                  window.sharparp.push({
+                                    title: window.sharparp.option.title.toast,
+                                    value: "Your weekly schedule has been updated.",
+                                  });
+                                }
+                          }
+                        },
+                      })
+                    }
+                  >
+                    Update Weekly
+                  </button>
+                </>
+              )}
+              {showEditNavigation === pagesNav.edit_override && (
+                <>
+                  <h2 className="text-center">
+                    Block or Override Specific Dates
+                  </h2>
+                  <div className="mt-2">
+                    <EventCalendar
+                      events={[]}
+                      onclicked={() => alert("ok")}
+                      activeCalendarButtonPass={{
+                        get: overrideActiveCalendarButton,
+                        set: setoverrideActiveCalendarButton,
+                      }}
+                    />
+                  </div>
+                  <p className="mt-4">
+                    Click a date and enter only the time(s) you will be
+                    available for that date.
+                    <br />
+                    <br />
+                    Leave empty for unavailability (24hrs clock)
+                  </p>
+
+                  <input
+                    type="text"
+                    placeholder="0920, 1230, 1400,1845"
+                    className="text-success form-control mb-2 shadow-sm"
+                    id="updateoverride"
+                    name="updateoverride"
+                  />
+
+                  <ul className="list-group overrideitemslist"> </ul>
+
+                  <button
+                    type="submit"
+                    className="shadow-sm btn btn-primary w-100 mt-3 p-3 addoverridebtnclick"
+                    onClick={() =>
+                      setshowModal({
+                        visible: true,
+                        body: "Do you want to override this date(s).",
+                        okbtn: "Save",
+                        okbtnFunc: () => {
+                          alert();
+                        },
+                        closeText: "Close",
+                      })
+                    }
+                  >
+                    Add Override
+                  </button>
+                </>
+              )}
             </div>
           </section>
         )}
@@ -472,8 +638,8 @@ function App() {
                     });
                     window.sharparp.push({
                       title: window.sharparp.option.title.toast,
-                       value: "You are signed out."
-                   });
+                      value: "You are signed out.",
+                    });
                   }}
                 >
                   <i className="bi bi-box-arrow-right"></i> Sign Out
@@ -482,151 +648,6 @@ function App() {
             </div>
           </section>
         )}
-
-        {showTabNavigation === pagesNav.edit && (
-          //edits
-          <section>
-            <Navbar className="custom-navbar  " expand="lg">
-              <Navbar.Brand> </Navbar.Brand>
-              <Navbar.Toggle aria-controls="basic-navbar-nav" />
-              <Navbar.Collapse id="basic-navbar-nav">
-                <Nav className="me-auto">
-                  <button
-                    className="btn"
-                    onClick={() => setshowEditNavigation(pagesNav.edit_weekly)}
-                  >
-                    Weekly Schedules
-                  </button>
-                  <button
-                    className="btn"
-                    onClick={() =>
-                      setshowEditNavigation(pagesNav.edit_override)
-                    }
-                  >
-                    Override Specific Dates
-                  </button>
-                  <button className="btn">Services</button>
-                </Nav>
-              </Navbar.Collapse>
-            </Navbar>
-            <div className="mt-2">
-              {showEditNavigation === pagesNav.edit_weekly && (
-                <>
-                  <h2 className="text-center mb-4">Weekly schedules</h2>
-                  <p className="text-center">
-                    Leave empty for unavailability (24hrs clock)
-                  </p>
-                  {WEEKDAYS.map((day, index) => (
-                    <div
-                      className="form-group schld-days-ofweek d-flex mb-3 align-items-center"
-                      key={day}
-                    >
-                      <label htmlFor={day.toLowerCase()}>
-                        {day.substring(0, 3)}:
-                      </label>
-                      <input
-                        placeholder="0845, 1230, 1540, 2000, 0000"
-                        type="text"
-                        className="shadow-sm form-control"
-                        id={day.toLowerCase()}
-                        name={day.toLowerCase()}
-                        value={availabilityInputs[day.toLowerCase()]}
-                        onChange={timeWriterOnchange}
-                      />
-                    </div>
-                  ))}
-
-                  <button
-                    type="submit"
-                    className="shadow-sm btn btn-primary w-100 mt-3 p-3 saveweeklyschedules"
-                    onClick={() =>
-                      setshowModal({
-                        visible: true,
-                        body: <>Do you want to save this weekly schedules.</>,
-                        okText: "Save",
-                        okFunc: () => {
-                          let err = false;
-                          WEEKDAYS.forEach((day) => {
-                            const dayKey = day.toLowerCase();
-                            const inputValue = availabilityInputs[dayKey];
-                            const matches =
-                              inputValue.match(/^(\d{4})(, \d{4})*$/) || false;
-                            if (!matches && inputValue !== "") {
-                              err = `Input valid dates for ${dayKey}`;
-                            }
-                          });
-
-                          if (err !== false) {
-                            setshowModal({
-                              visible: true,
-                              body: <>{err}</>,
-                              header: "Error !!!",
-                            });
-                          } else {
-                            alert("thats wassup");
-                          }
-                        },
-                      })
-                    }
-                  >
-                    Update Weekly
-                  </button>
-                </>
-              )}
-              {showEditNavigation === pagesNav.edit_override && (
-                <>
-                  <h2 className="mb-4">Block or Override Specific Dates</h2>
-                  <div className="mt-4">
-                    <EventCalendar
-                      events={[]}
-                      onclicked={() => alert("ok")}
-                      activeCalendarButtonPass={{
-                        get: overrideActiveCalendarButton,
-                        set: setoverrideActiveCalendarButton,
-                      }}
-                    />
-                  </div>
-                  <p className="mt-4">
-                    Click a date and enter only the time(s) you will be
-                    available for that date.
-                    <br />
-                    <br />
-                    Leave empty for unavailability (24hrs clock)
-                  </p>
-
-                  <input
-                    type="text"
-                    placeholder="0920, 1230, 1400,1845"
-                    className="text-success form-control mb-2 shadow-sm"
-                    id="updateoverride"
-                    name="updateoverride"
-                  />
-
-                  <ul className="list-group overrideitemslist"> </ul>
-
-                  <button
-                    type="submit"
-                    className="shadow-sm btn btn-primary w-100 mt-3 p-3 addoverridebtnclick"
-                    onClick={() =>
-                      setshowModal({
-                        visible: true,
-                        body: "Do you want to override this date(s).",
-                        okbtn: "Save",
-                        okbtnFunc: () => {
-                          alert();
-                        },
-                        closeText: "Close",
-                      })
-                    }
-                  >
-                    Add Override
-                  </button>
-                </>
-              )}
-            </div>
-          </section>
-        )}
-
         {showTabNavigation === pagesNav.profile && (
           //profile page
           <section className="mt-5">
