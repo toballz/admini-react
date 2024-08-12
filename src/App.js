@@ -57,10 +57,15 @@ function App() {
     center: <></>,
     right: <></>,
   });
+  const [overrideScheduleJson, setoverrideScheduleJson] = useState([]);
   //
   //
   //***********************
   const bottomNavClickPage = async (divName) => {
+    window.sharparp.push({
+      title: window.sharparp.option.title.loading,
+      value: "start",
+    });
     setheaderNav({ left: null, center: null, right: null });
     if (divName === pagesNav.appointments) {
       const httpResponse = await httpPost({
@@ -72,9 +77,11 @@ function App() {
 
       if (httpResponse !== null) {
         const eventDatesBooked = await httpResponse.json();
-        const eventDatesBookedToInt = eventDatesBooked.message.map((date) => {
-          return parseInt(date, 10);
-        });
+        const eventDatesBookedToInt = (eventDatesBooked.message ?? []).map(
+          (date) => {
+            return parseInt(date, 10);
+          }
+        );
         setFromTodayDateFurther(eventDatesBookedToInt);
       }
       //******************
@@ -83,22 +90,24 @@ function App() {
         right: (
           <Dropdown>
             <Dropdown.Toggle
-              as="div"
+              as="button"
+              className="btn"
               bsPrefix="custom-toggle"
               variant="transparent"
             >
-              {" "}
-              <i className="bi bi-three-dots-vertical"></i>{" "}
+              <i className="bi bi-three-dots-vertical"></i>
             </Dropdown.Toggle>
 
             <Dropdown.Menu align="end" className="p-2 fs-7">
               <Dropdown.Item
+                className="p-2"
                 onClick={() => setshowEditNavigation(pagesNav.edit_weekly)}
               >
                 Weekly Schedules
               </Dropdown.Item>
               <hr className="m-1" />
               <Dropdown.Item
+                className="p-2"
                 onClick={() => setshowEditNavigation(pagesNav.edit_override)}
               >
                 Override Specific Dates
@@ -107,13 +116,14 @@ function App() {
           </Dropdown>
         ),
       });
-      const httpResponse = await httpPost({
+      //
+      const httpWeeklySchedule = await httpPost({
         cros: "getterCross",
         getweeklyStatic: "2",
         had: "a",
       });
-      if (httpResponse !== null) {
-        const httpJson = await httpResponse.json();
+      if (httpWeeklySchedule ?? false) {
+        const httpJson = await httpWeeklySchedule.json();
 
         const updatedInputs = WEEKDAYS.reduce(
           (acc, day) => ({
@@ -127,8 +137,22 @@ function App() {
           ...updatedInputs,
         });
       }
+      //
+      const httpOverrideSchedule = await httpPost({
+        cros: "getterCross",
+        getOverrideDates: "2",
+        va: "a",
+      });
+
+      if (httpOverrideSchedule ?? false) {
+        setoverrideScheduleJson(await httpOverrideSchedule.json());
+      }
     }
     setshowTabNavigation(divName);
+    window.sharparp.push({
+      title: window.sharparp.option.title.loading,
+      value: "stop",
+    });
   };
   function copyPhoneEmail(phoneEmail, type) {
     try {
@@ -231,7 +255,7 @@ function App() {
           //page [appointments]
           <section>
             <div className="mt-5">
-              <h2 className="text-center">Upcoming Appointments</h2>
+              <h2 className="text-center mb-4">Upcoming Appointments</h2>
               <EventCalendar
                 events={fromTodayDateFurther}
                 blockedDates={["20240101-20500101"]}
@@ -338,7 +362,14 @@ function App() {
                                     <li>
                                       <span>Time</span>
                                       <span style={{ color: "green" }}>
-                                        {format(receiptHttp["time"], "hh:mm a")}
+                                        {format(
+                                          parse(
+                                            receiptHttp["time"],
+                                            "HHmm",
+                                            new Date()
+                                          ),
+                                          "hh:mm a"
+                                        )}
                                       </span>
                                     </li>
                                   </ul>
@@ -480,7 +511,8 @@ function App() {
                           let err = false;
                           WEEKDAYS.forEach((day) => {
                             const dayKey = day.toLowerCase();
-                            const inputValue = weeklyAvailabilityInputs[dayKey];
+                            const inputValue =
+                              weeklyAvailabilityInputs[dayKey] ?? "null";
                             const matches =
                               inputValue.match(/^(\d{4})(, \d{4})*$/) || false;
                             if (!matches && inputValue !== "") {
@@ -523,7 +555,7 @@ function App() {
                   <h2 className="text-center">
                     Block or Override Specific Dates
                   </h2>
-                  <div className="mt-2">
+                  <div className="mt-4">
                     <EventCalendar
                       events={[]}
                       onclicked={(buttonid, date) => setcalenderDaysClick(date)}
@@ -547,7 +579,47 @@ function App() {
                     onChange={timeWriterInputOnchange}
                   />
 
-                  <ul className="list-group overrideitemslist"> </ul>
+                  <div className="p-2 pb-1 mt-3">
+                    <b>Saved Overridden Dates</b>
+                  </div>
+                  <ul className="list-group">
+                    {(overrideScheduleJson ?? []).map((a, n) => {
+                      return (
+                        <li key={`ll-${a.date}`}>
+                          <div className="d-flex align-items-center justify-content-between p-2">
+                            <div className="row w-100">
+                              <span className="row-md-1 mb-1">
+                                {format(
+                                  parse("" + a.date, "yyyyMMdd", new Date()),
+                                  "eeee d MMMM yyyy"
+                                )}
+                              </span>
+                              <span className="col-md-4 mb-1">
+                                {a.time
+                                  .split(",")
+                                  .map((timew) => timew.trim())
+                                  .map((time, index) => (
+                                    <span key={index}>
+                                      {format(
+                                        parse(time, "HHmm", new Date()),
+                                        "hh:mm a"
+                                      )}
+                                      {index !== a.time.split(",").length - 1
+                                        ? ", "
+                                        : ""}
+                                    </span>
+                                  ))}
+                              </span>
+                            </div>
+                            <button className="btn">
+                              <i className="bi bi-trash"></i>
+                            </button>
+                          </div>
+                          <hr className="m-1" />
+                        </li>
+                      );
+                    })}
+                  </ul>
 
                   <button
                     type="submit"
@@ -569,8 +641,10 @@ function App() {
                             body: (
                               <>
                                 <>Do you want to override this date ?</>
-                                <br /><br />
-                                <b>Date: </b>{format(da, "eeee d MMMM yyyy")}
+                                <br />
+                                <br />
+                                <b>Date: </b>
+                                {format(da, "eeee d MMMM yyyy")}
                                 <br />
                                 <br />
                                 <b>From: </b>

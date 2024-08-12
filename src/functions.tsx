@@ -79,7 +79,7 @@ export const EventCalendar = ({
   };
 
   return (
-    <div className="mx-auto rounded p-2 pb-3 eventcalendar-parent">
+    <div className="mx-auto rounded p-2 pb-4 eventcalendar-parent">
       <div className="mb-4 d-flex flex-row justify-content-between">
         <button
           className="btn p-1"
