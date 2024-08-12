@@ -15,6 +15,7 @@ import { Modal, Navbar, Dropdown } from "react-bootstrap";
 const pagesNav = {
   appointments: "appointments",
   settings: "settings",
+  stats: "stats",
   edit: "edits",
   edit_weekly: "edit_weekly",
   edit_override: "edit_override",
@@ -36,6 +37,18 @@ function App() {
   const [calenderDaysClick, setcalenderDaysClick] = useState(null);
   const [overrideInput, setoverrideInput] = useState("");
   const [fromTodayDateFurther, setFromTodayDateFurther] = useState([]);
+  const [statsPage, setstatsPage] = useState({
+    popularHairstyleBooked: [
+      {
+        hairstyle: "xxxxxx",
+        image: "nuul",
+        appearance_count: "0",
+      }, 
+    ],
+    beginingOfThisMonth: "5",
+    lastMonth: "10",
+    allToDate: "38",
+  });
 
   //
 
@@ -71,7 +84,6 @@ function App() {
       const httpResponse = await httpPost({
         cros: "getterCross",
         getDatesAppointmentsMoreThanDate: "2",
-        //'dateTo': "20240707"});
         dateTo: format(todayDate, "yyyyMMdd"),
       });
 
@@ -147,7 +159,21 @@ function App() {
       if (httpOverrideSchedule ?? false) {
         setoverrideScheduleJson(await httpOverrideSchedule.json());
       }
+    
+    } else if (divName === pagesNav.stats) {
+      const httpOverrideSchedule = await httpPost({
+        cros: "getterCross",v: "1,",
+        stats: '',
+        beginingOfThisMonth: "20240812",
+        beginingOfLastMonth: "20240701",
+        sg: "0"
+      });
+
+      if (httpOverrideSchedule ?? false) {
+        setstatsPage(await httpOverrideSchedule.json());
+      }
     }
+    
     setshowTabNavigation(divName);
     window.sharparp.push({
       title: window.sharparp.option.title.loading,
@@ -204,9 +230,9 @@ function App() {
 
   //
   //
-  //
-  //**************
-  //**************
+  //render/render/render/render
+  //**************/render/render
+  //**************/render/render
   //**************
   //**************
   //**************
@@ -218,7 +244,7 @@ function App() {
   return (
     <>
       <header className="container">
-        <Navbar expand="lg">
+        <Navbar expand="lg" style={{minHeight: "59px"}}>
           <div>{headerNav.left && headerNav.left}</div>
           <div>{headerNav.center && headerNav.center}</div>
           <div>{headerNav.right && headerNav.right}</div>
@@ -279,7 +305,7 @@ function App() {
                     <div
                       key={index}
                       className="mb-4"
-                      style={index !== 0 ? { borderTop: "1px solid #ccc" } : {}}
+                      style={index !== 0 ? { borderTop: "1px solid #ccc",cursor:"pointer"} : {cursor:"pointer"}}
                       onClick={async () => {
                         const receiptHttpResopnse = await httpPost({
                           cros: "getterCross",
@@ -438,8 +464,7 @@ function App() {
                       {
                         //activeCalendarButton !== null && (
                         <div className="d-flex flex-row align-items-center mt-4">
-                          <div style={{ flex: "2", maxWidth: "120px" }}>
-                            {" "}
+                          <div style={{ flex: "2", maxWidth: "120px" }}> 
                             <img
                               src={appointment["imageUrl"]}
                               alt={appointment["hairname"]}
@@ -695,6 +720,39 @@ function App() {
           </section>
         )}
 
+        {showTabNavigation === pagesNav.stats && (
+          //page [stats]
+
+          <section >
+            <hr />
+            <h2 className="text-center">Top 5 Hairstyle Booked</h2>
+            <ul>
+              {statsPage["popularHairstyleBooked"].map((item, index) => (
+                <li
+                  key={index}
+                  className="d-flex flex-row align-items-center mb-3"
+                >
+                  <div style={{ flex: "2", maxWidth: "120px" }}>
+                    <img
+                      src={`https://cocohairsignature.com/img/${item["image"]}.jpg?trd`}
+                      alt={item["hairstyle"]}
+                    />
+                  </div>
+
+                  <div className="mx-3 appointmentbookedlist">
+                    <div className="appointmentbookedlist">
+                      {item["hairstyle"]}
+                    </div>
+                    <div className="mt-1 text-success">
+                      <b>{item["appearance_count"]}: people booked this.</b>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         {showTabNavigation === pagesNav.settings && (
           //page [settings]
           <section
@@ -818,18 +876,21 @@ function App() {
               className="nav-link"
             >
               <i className="bi bi-house"></i>
-              <span className="d-block navb-fs">Appointments</span>{" "}
+              <span className="d-block navb-fs">Appointments</span>
             </button>
             <button
               onClick={() => bottomNavClickPage(pagesNav.edit)}
               className="nav-link"
             >
               <i className="bi bi-pencil-square"></i>
-              <span className="d-block navb-fs">Edits</span>{" "}
+              <span className="d-block navb-fs">Edits</span>
             </button>
-            <button className="nav-link">
-              <i className="bi bi-bar-chart"></i>{" "}
-              <span className="d-block navb-fs">Stats</span>{" "}
+            <button
+              className="nav-link"
+              onClick={() => bottomNavClickPage(pagesNav.stats)}
+            >
+              <i className="bi bi-bar-chart"></i>
+              <span className="d-block navb-fs">Stats</span>
             </button>
             <button
               onClick={() => bottomNavClickPage(pagesNav.settings)}
