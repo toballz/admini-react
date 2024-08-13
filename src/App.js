@@ -21,7 +21,6 @@ const pagesNav = {
   edit_override: "edit_override",
   profile: "profile",
 };
-
 //
 //render app
 
@@ -43,7 +42,7 @@ function App() {
         hairstyle: "xxxxxx",
         image: "nuul",
         appearance_count: "0",
-      }, 
+      },
     ],
     beginingOfThisMonth: "5",
     lastMonth: "10",
@@ -159,21 +158,21 @@ function App() {
       if (httpOverrideSchedule ?? false) {
         setoverrideScheduleJson(await httpOverrideSchedule.json());
       }
-    
     } else if (divName === pagesNav.stats) {
       const httpOverrideSchedule = await httpPost({
-        cros: "getterCross",v: "1,",
-        stats: '',
+        cros: "getterCross",
+        v: "1,",
+        stats: "",
         beginingOfThisMonth: "20240812",
         beginingOfLastMonth: "20240701",
-        sg: "0"
+        sg: "0",
       });
 
       if (httpOverrideSchedule ?? false) {
         setstatsPage(await httpOverrideSchedule.json());
       }
     }
-    
+
     setshowTabNavigation(divName);
     window.sharparp.push({
       title: window.sharparp.option.title.loading,
@@ -220,9 +219,25 @@ function App() {
         closeText: "Retry",
         closeFunc: () => {},
       });
+    const blockContextMenu = (event) => {
+      const allowedTags = ["INPUT", "TEXTAREA"];
+      let target = event.target;
+      while (target && target !== document) {
+        if (allowedTags.includes(target.tagName)) {
+          return; // Allow context menu
+        }
+        target = target.parentNode;
+      }
+      // If not allowed, prevent the default context menu
+      event.preventDefault();
+    };
+
+    window.addEventListener("contextmenu", blockContextMenu);
     window.addEventListener("online", siOnline);
     window.addEventListener("offline", siOffline);
+
     return () => {
+      window.removeEventListener("contextmenu", blockContextMenu);
       window.removeEventListener("online", siOnline);
       window.removeEventListener("offline", siOffline);
     };
@@ -244,7 +259,7 @@ function App() {
   return (
     <>
       <header className="container">
-        <Navbar expand="lg" style={{minHeight: "59px"}}>
+        <Navbar expand="lg" style={{ minHeight: "59px" }}>
           <div>{headerNav.left && headerNav.left}</div>
           <div>{headerNav.center && headerNav.center}</div>
           <div>{headerNav.right && headerNav.right}</div>
@@ -280,216 +295,216 @@ function App() {
         {showTabNavigation === pagesNav.appointments && (
           //page [appointments]
           <section>
+            <h2 className="text-center mb-4">Upcoming Appointments</h2>
+            <EventCalendar
+              events={fromTodayDateFurther}
+              blockedDates={["20240101-20500101"]}
+              onclicked={async (buttonId, datetoget) => {
+                const httpResponse = await httpPost({
+                  cros: "getterCross",
+                  getDatesAppointmentsSpecDate: "2",
+                  dateFrom: "" + datetoget,
+                });
+                //alert(input);
+                if (httpResponse !== null) {
+                  setBookedList(await httpResponse.json());
+                }
+              }}
+            />
+
             <div className="mt-5">
-              <h2 className="text-center mb-4">Upcoming Appointments</h2>
-              <EventCalendar
-                events={fromTodayDateFurther}
-                blockedDates={["20240101-20500101"]}
-                onclicked={async (buttonId, datetoget) => {
-                  const httpResponse = await httpPost({
-                    cros: "getterCross",
-                    getDatesAppointmentsSpecDate: "2",
-                    dateFrom: "" + datetoget,
-                  });
-                  //alert(input);
-                  if (httpResponse !== null) {
-                    setBookedList(await httpResponse.json());
-                  }
-                }}
-              />
-
-              <div className="mt-5">
-                {scedulesBookedList.map((appointment, index) => {
-                  //day of week in month
-                  return (
-                    <div
-                      key={index}
-                      className="mb-4"
-                      style={index !== 0 ? { borderTop: "1px solid #ccc",cursor:"pointer"} : {cursor:"pointer"}}
-                      onClick={async () => {
-                        const receiptHttpResopnse = await httpPost({
-                          cros: "getterCross",
-                          receiptIIinfo: appointment["orderId"],
-                          j: "1",
-                        });
-                        if (receiptHttpResopnse !== null) {
-                          const receiptHttp = await receiptHttpResopnse.json();
-                          setshowModal({
-                            visible: true,
-                            title: "Receipt",
-                            body: (
-                              <>
-                                <div className="modal-body">
-                                  <div className="w-100">
-                                    <img
-                                      className="w-100"
-                                      style={{
-                                        paddingLeft: "50px",
-                                        paddingRight: "50px",
-                                      }}
-                                      src={`${domain}/img/${receiptHttp["image"]}.jpg?a47`}
-                                      alt={receiptHttp["hairstyle"]}
-                                    />
-                                  </div>
-                                  <ul className="list-group mt-3 listeceiptul">
-                                    <li>
-                                      <span>Name</span>
-                                      <span>{receiptHttp["customername"]}</span>
-                                    </li>
-                                    <li>
-                                      <span>Phone</span>
-                                      <span
-                                        style={{ color: "blue" }}
-                                        onClick={() =>
-                                          copyPhoneEmail(
-                                            receiptHttp["phonne"],
-                                            "phone"
-                                          )
-                                        }
-                                      >
-                                        {receiptHttp["phonne"]}
-                                      </span>
-                                    </li>
-                                    <li>
-                                      <span>Email</span>
-                                      <span
-                                        style={{ color: "blue" }}
-                                        onClick={() =>
-                                          copyPhoneEmail(
-                                            receiptHttp["email"],
-                                            "email"
-                                          )
-                                        }
-                                      >
-                                        {receiptHttp["email"]}
-                                      </span>
-                                    </li>
-                                    <li>
-                                      <span>Hairstyle</span>
-                                      <span>{receiptHttp["hairstyle"]}</span>
-                                    </li>
-                                    <li>
-                                      <span>Price</span>
-                                      <span>{receiptHttp["price"]}</span>
-                                    </li>
-                                    <li>
-                                      <span>Date</span>
-                                      <span style={{ color: "green" }}>
-                                        {format(
-                                          parse(
-                                            receiptHttp["date"],
-                                            "yyyyMMdd",
-                                            new Date()
-                                          ),
-                                          "eeee d MMMM yyyy"
-                                        )}
-                                      </span>
-                                    </li>
-                                    <li>
-                                      <span>Time</span>
-                                      <span style={{ color: "green" }}>
-                                        {format(
-                                          parse(
-                                            receiptHttp["time"],
-                                            "HHmm",
-                                            new Date()
-                                          ),
-                                          "hh:mm a"
-                                        )}
-                                      </span>
-                                    </li>
-                                  </ul>
+              {scedulesBookedList.map((appointment, index) => {
+                //day of week in month
+                return (
+                  <div
+                    key={index}
+                    className="mb-4"
+                    style={
+                      index !== 0
+                        ? { borderTop: "1px solid #ccc", cursor: "pointer" }
+                        : { cursor: "pointer" }
+                    }
+                    onClick={async () => {
+                      const receiptHttpResopnse = await httpPost({
+                        cros: "getterCross",
+                        receiptIIinfo: appointment["orderId"],
+                        j: "1",
+                      });
+                      if (receiptHttpResopnse !== null) {
+                        const receiptHttp = await receiptHttpResopnse.json();
+                        setshowModal({
+                          visible: true,
+                          title: "Receipt",
+                          body: (
+                            <>
+                              <div className="modal-body">
+                                <div className="w-100">
+                                  <img
+                                    className="w-100"
+                                    style={{
+                                      paddingLeft: "50px",
+                                      paddingRight: "50px",
+                                    }}
+                                    src={`${domain}/img/${receiptHttp["image"]}.jpg?a47`}
+                                    alt={receiptHttp["hairstyle"]}
+                                  />
                                 </div>
-                              </>
-                            ),
-                            okText: "Delete this Appointment",
-                            okColor: "btn-danger",
-                            okFunc: () =>
-                              setshowModal({
-                                visible: true,
-                                body: (
-                                  <>
-                                    <div>
-                                      <b>Name: </b>
-                                      {receiptHttp["customername"]}
-                                    </div>
-                                    <div>
-                                      <b>Hairstyle: </b>
-                                      {receiptHttp["hairstyle"]}
-                                    </div>
-                                    <div>
-                                      <b>Phone: </b>
+                                <ul className="list-group mt-3 listeceiptul">
+                                  <li>
+                                    <span>Name</span>
+                                    <span>{receiptHttp["customername"]}</span>
+                                  </li>
+                                  <li>
+                                    <span>Phone</span>
+                                    <span
+                                      style={{ color: "blue" }}
+                                      onClick={() =>
+                                        copyPhoneEmail(
+                                          receiptHttp["phonne"],
+                                          "phone"
+                                        )
+                                      }
+                                    >
                                       {receiptHttp["phonne"]}
-                                    </div>
-                                    <div>
-                                      <b>Email: </b>
+                                    </span>
+                                  </li>
+                                  <li>
+                                    <span>Email</span>
+                                    <span
+                                      style={{ color: "blue" }}
+                                      onClick={() =>
+                                        copyPhoneEmail(
+                                          receiptHttp["email"],
+                                          "email"
+                                        )
+                                      }
+                                    >
                                       {receiptHttp["email"]}
-                                    </div>
-                                  </>
-                                ),
-                                header:
-                                  "Delete this appointment? Are you sure?",
-                                okColor: "btn-danger",
-                                okText: "Delete this Appointment",
-                                okFunc: () => {
-                                  httpPost({
-                                    cros: "1",
-                                    deleteAppointment: "2",
-                                    ksy: appointment["orderId"],
-                                  }).then((deleteResponse) => {
-                                    if (deleteResponse !== null) {
-                                      window.sharparp.push({
-                                        title:
-                                          window.sharparp.option.title.toast,
-                                        value: "Appointment has been deleted.",
-                                      });
-                                      setshowModal({ visible: false });
-                                      setTimeout(function () {
-                                        window.location.reload();
-                                      }, 1000);
-                                    }
-                                  });
-                                },
-                              }),
-                          });
-                        } else {
-                          setshowModal({
-                            visible: true,
-                            header: <>Error !!!</>,
-                            body: <>Error getting receipt.</>,
-                          });
-                        }
-                      }}
-                    >
-                      {
-                        //activeCalendarButton !== null && (
-                        <div className="d-flex flex-row align-items-center mt-4">
-                          <div style={{ flex: "2", maxWidth: "120px" }}> 
-                            <img
-                              src={appointment["imageUrl"]}
-                              alt={appointment["hairname"]}
-                            />
-                          </div>
+                                    </span>
+                                  </li>
+                                  <li>
+                                    <span>Hairstyle</span>
+                                    <span>{receiptHttp["hairstyle"]}</span>
+                                  </li>
+                                  <li>
+                                    <span>Price</span>
+                                    <span>{receiptHttp["price"]}</span>
+                                  </li>
+                                  <li>
+                                    <span>Date</span>
+                                    <span style={{ color: "green" }}>
+                                      {format(
+                                        parse(
+                                          receiptHttp["date"],
+                                          "yyyyMMdd",
+                                          new Date()
+                                        ),
+                                        "eeee d MMMM yyyy"
+                                      )}
+                                    </span>
+                                  </li>
+                                  <li>
+                                    <span>Time</span>
+                                    <span style={{ color: "green" }}>
+                                      {format(
+                                        parse(
+                                          receiptHttp["time"],
+                                          "HHmm",
+                                          new Date()
+                                        ),
+                                        "hh:mm a"
+                                      )}
+                                    </span>
+                                  </li>
+                                </ul>
+                              </div>
+                            </>
+                          ),
+                          okText: "Delete this Appointment",
+                          okColor: "btn-danger",
+                          okFunc: () =>
+                            setshowModal({
+                              visible: true,
+                              body: (
+                                <>
+                                  <div>
+                                    <b>Name: </b>
+                                    {receiptHttp["customername"]}
+                                  </div>
+                                  <div>
+                                    <b>Hairstyle: </b>
+                                    {receiptHttp["hairstyle"]}
+                                  </div>
+                                  <div>
+                                    <b>Phone: </b>
+                                    {receiptHttp["phonne"]}
+                                  </div>
+                                  <div>
+                                    <b>Email: </b>
+                                    {receiptHttp["email"]}
+                                  </div>
+                                </>
+                              ),
+                              header: "Delete this appointment? Are you sure?",
+                              okColor: "btn-danger",
+                              okText: "Delete this Appointment",
+                              okFunc: () => {
+                                httpPost({
+                                  cros: "1",
+                                  deleteAppointment: "2",
+                                  ksy: appointment["orderId"],
+                                }).then((deleteResponse) => {
+                                  if (deleteResponse !== null) {
+                                    window.sharparp.push({
+                                      title: window.sharparp.option.title.toast,
+                                      value: "Appointment has been deleted.",
+                                    });
+                                    setshowModal({ visible: false });
+                                    setTimeout(function () {
+                                      window.location.reload();
+                                    }, 1000);
+                                  }
+                                });
+                              },
+                            }),
+                        });
+                      } else {
+                        setshowModal({
+                          visible: true,
+                          header: <>Error !!!</>,
+                          body: <>Error getting receipt.</>,
+                        });
+                      }
+                    }}
+                  >
+                    {
+                      //activeCalendarButton !== null && (
+                      <div className="d-flex flex-row align-items-center mt-4">
+                        <div style={{ flex: "2", maxWidth: "120px" }}>
+                          <img
+                            src={appointment["imageUrl"]}
+                            alt={appointment["hairname"]}
+                          />
+                        </div>
 
-                          <div className="mx-3 appointmentbookedlist">
-                            <div className="appointmentbookedlist">
-                              {appointment["hairname"]}
-                            </div>
-                            <div className="mt-1 text-success">
-                              <b>{appointment["datetime"]}</b>
-                            </div>
+                        <div className="mx-3 appointmentbookedlist">
+                          <div className="appointmentbookedlist">
+                            {appointment["hairname"]}
                           </div>
-
-                          <div style={{ flex: "1" }}>
-                            <i className="bi bi-eye"></i>
+                          <div className="mt-1 text-success">
+                            <b>{appointment["datetime"]}</b>
                           </div>
                         </div>
-                        //)
-                      }
-                    </div>
-                  );
-                })}
-              </div>
+
+                        <div style={{ flex: "1" }}>
+                          <i className="bi bi-eye"></i>
+                        </div>
+                      </div>
+                      //)
+                    }
+                  </div>
+                );
+              })}
             </div>
           </section>
         )}
@@ -620,23 +635,67 @@ function App() {
                                 )}
                               </span>
                               <span className="col-md-4 mb-1">
-                                {a.time
-                                  .split(",")
-                                  .map((timew) => timew.trim())
-                                  .map((time, index) => (
-                                    <span key={index}>
-                                      {format(
-                                        parse(time, "HHmm", new Date()),
-                                        "hh:mm a"
-                                      )}
-                                      {index !== a.time.split(",").length - 1
-                                        ? ", "
-                                        : ""}
-                                    </span>
-                                  ))}
+                                {a.time === ""
+                                  ? "Not available"
+                                  : a.time
+                                      .split(",")
+                                      .map((timew) => timew.trim())
+                                      .map((time, index) => (
+                                        <span key={index}>
+                                          {format(
+                                            parse(time, "HHmm", new Date()),
+                                            "hh:mm a"
+                                          )}
+                                          {index !==
+                                          a.time.split(",").length - 1
+                                            ? ", "
+                                            : ""}
+                                        </span>
+                                      ))}
                               </span>
                             </div>
-                            <button className="btn">
+                            <button
+                              className="btn"
+                              onClick={async () => {
+                                setshowModal({
+                                  visible: true,
+                                  header:
+                                    "Do you want to delete this override date!",
+                                  body: (
+                                    <>
+                                      Return{" "}
+                                      {format(
+                                        parse(
+                                          "" + a.date,
+                                          "yyyyMMdd",
+                                          new Date()
+                                        ),
+                                        "eeee d MMMM yyyy"
+                                      )}{" "}
+                                      back to weekly schedule?
+                                    </>
+                                  ),
+                                  okText: "Revert/Remove",
+                                  okFunc: async () => {
+                                    var tts = (
+                                      overrideScheduleJson ?? []
+                                    ).filter((item) => item.date !== a.date);
+                                    setoverrideScheduleJson(tts);
+                                    const httpOverrideSchedule = await httpPost(
+                                      {
+                                        cros: "getterCross",
+                                        cat: JSON.stringify(tts),
+                                        updateOverrided: "v1",
+                                      }
+                                    );
+
+                                    if (httpOverrideSchedule ?? false) {
+                                      setshowModal({ visible: false });
+                                    }
+                                  },
+                                });
+                              }}
+                            >
                               <i className="bi bi-trash"></i>
                             </button>
                           </div>
@@ -674,11 +733,11 @@ function App() {
                                 <br />
                                 <b>From: </b>
                                 <>
-                                  {overrideInput === ""
-                                    ? "Not Available"
-                                    : weeklyAvailabilityInputs[
-                                        format(da, "eeee").toLowerCase()
-                                      ]}
+                                  {
+                                    weeklyAvailabilityInputs[
+                                      format(da, "eeee").toLowerCase()
+                                    ]
+                                  }
                                 </>
                                 <br />
                                 <b>To: </b>
@@ -689,9 +748,37 @@ function App() {
                                 </>
                               </>
                             ),
-                            okbtn: "Save",
-                            okFunc: () => {
-                              alert();
+                            okFunc: async () => {
+                              function updateOrPush(date, newTime) {
+                                let fff = overrideScheduleJson ?? [];
+                                // Check if the date exists in the array
+                                const index = fff.findIndex(
+                                  (item) => item.date === date
+                                );
+                                if (index !== -1) {
+                                  // Date exists, update the time
+                                  fff[index].time = newTime;
+                                } else {
+                                  // Date does not exist, push new object
+                                  fff.push({ date: date, time: newTime });
+                                }
+                                setoverrideScheduleJson(fff);
+                              }
+
+                              updateOrPush(
+                                String(calenderDaysClick),
+                                overrideInput
+                              );
+
+                              const httpOverrideSchedule = await httpPost({
+                                cros: "getterCross",
+                                cat: JSON.stringify(overrideScheduleJson),
+                                updateOverrided: "v1",
+                              });
+
+                              if (httpOverrideSchedule ?? false) {
+                                setshowModal({ visible: false });
+                              }
                             },
                             okText: "Override",
                           });
@@ -723,7 +810,7 @@ function App() {
         {showTabNavigation === pagesNav.stats && (
           //page [stats]
 
-          <section >
+          <section>
             <hr />
             <h2 className="text-center">Top 5 Hairstyle Booked</h2>
             <ul>
