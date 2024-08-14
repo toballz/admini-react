@@ -9,8 +9,8 @@ import {
 } from "date-fns";
 import React, { useState } from "react";
 
-export const domain = "http://cocohairsignature.com",
-  apiM = domain + "/159742f243a05f0733d5d6497fd3f947/app/apim.php",
+export const domain = "https://cocohairsignature.com",
+  apiM = domain + "/i/apim.php",
   todayDate = new Date(),
   WEEKDAYS = [
     "Sunday",
@@ -28,20 +28,24 @@ export async function httpPost(params: { [key: string]: string }) {
     formData.append(key, value);
   }
 
-  const httpResponse = await fetch(apiM, {
-    redirect: "follow",
-    method: "post",
-    headers: {
-      //'Content-Type': 'application/json',
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: formData.toString(),
-  });
-  if (httpResponse.ok) {
-    return httpResponse;
-  } else {
-    return null;
-  }
+  let httpResponse;
+  try {
+    httpResponse = await fetch(apiM, {
+      redirect: "follow",
+      method: "post",
+      headers: {
+        //'Content-Type': 'application/json',
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: formData.toString(),
+    });
+    if (httpResponse.ok) {
+      return httpResponse;
+    } else {
+      return null;
+    }
+  } catch (ex) {
+    return null;}
 }
 
 interface EventCalendarProps {
@@ -51,7 +55,7 @@ interface EventCalendarProps {
 }
 export const EventCalendar = ({
   events,
-  onclicked ,
+  onclicked,
   blockedDates = ["20240101"],
 }: EventCalendarProps) => {
   const [firstDayOfMonth, setfirstDayOfMonth] = useState(
@@ -149,7 +153,8 @@ export const EventCalendar = ({
             <div
               key={index}
               onClick={() => {
-                if (!isNotActive) {//is active 
+                if (!isNotActive) {
+                  //is active
                   setactiveDayClicked(index);
                   onclicked(index, Number(dateKey));
                 }
