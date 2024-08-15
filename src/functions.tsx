@@ -11,6 +11,7 @@ import React, { useState } from "react";
 
 export const domain = "https://cocohairsignature.com",
   apiM = domain + "/i/apim.php",
+  IsLive = false,
   todayDate = new Date(),
   WEEKDAYS = [
     "Sunday",

@@ -6,6 +6,7 @@ import {
   httpPost,
   todayDate,
   domain,
+  IsLive,
 } from "./functions.tsx";
 import { format, parse } from "date-fns";
 import { Modal, Navbar, Dropdown } from "react-bootstrap";
@@ -449,22 +450,31 @@ function App() {
                               okColor: "btn-danger",
                               okText: "Delete this Appointment",
                               okFunc: () => {
-                                httpPost({
-                                  cros: "1",
-                                  deleteAppointment: "2",
-                                  ksy: appointment["orderId"],
-                                }).then((deleteResponse) => {
-                                  if (deleteResponse !== null) {
-                                    window.sharparp.push({
-                                      title: window.sharparp.option.title.toast,
-                                      value: "Appointment has been deleted.",
-                                    });
-                                    setshowModal({ visible: false });
-                                    setTimeout(function () {
-                                      window.location.reload();
-                                    }, 1000);
-                                  }
-                                });
+                                if (IsLive) {
+                                  httpPost({
+                                    cros: "1",
+                                    deleteAppointment: "2",
+                                    ksy: appointment["orderId"],
+                                  }).then((deleteResponse) => {
+                                    if (deleteResponse !== null) {
+                                      window.sharparp.push({
+                                        title:
+                                          window.sharparp.option.title.toast,
+                                        value: "Appointment has been deleted.",
+                                      });
+                                      setshowModal({ visible: false });
+                                      setTimeout(function () {
+                                        window.location.reload();
+                                      }, 1000);
+                                    }
+                                  });
+                                } else {
+                                  window.sharparp.push({
+                                    title: window.sharparp.option.title.toast,
+                                    value:
+                                      "This feature has been disabled for app store testing !!",
+                                  });
+                                }
                               },
                             }),
                         });
@@ -548,39 +558,49 @@ function App() {
                         body: <>Do you want to save this weekly schedules.</>,
                         okText: "Save",
                         okFunc: () => {
-                          let err = false;
-                          WEEKDAYS.forEach((day) => {
-                            const dayKey = day.toLowerCase();
-                            const inputValue =
-                              weeklyAvailabilityInputs[dayKey] ?? "null";
-                            const matches =
-                              inputValue.match(/^(\d{4})(, \d{4})*$/) || false;
-                            if (!matches && inputValue !== "") {
-                              err = `Input valid dates for ${dayKey}`;
-                            }
-                          });
+                          if (IsLive) {
+                            let err = false;
+                            WEEKDAYS.forEach((day) => {
+                              const dayKey = day.toLowerCase();
+                              const inputValue =
+                                weeklyAvailabilityInputs[dayKey] ?? "null";
+                              const matches =
+                                inputValue.match(/^(\d{4})(, \d{4})*$/) ||
+                                false;
+                              if (!matches && inputValue !== "") {
+                                err = `Input valid dates for ${dayKey}`;
+                              }
+                            });
 
-                          if (err !== false) {
-                            setshowModal({
-                              visible: true,
-                              body: <>{err}</>,
-                              header: "Error !!!",
-                            });
-                          } else {
-                            const updateweeklyResponse = httpPost({
-                              cros: "getterCross",
-                              updatesWeekly: JSON.stringify(
-                                weeklyAvailabilityInputs
-                              ),
-                              ajr: "a",
-                            });
-                            if (updateweeklyResponse !== null) {
-                              setshowModal({ visible: false });
-                              window.sharparp.push({
-                                title: window.sharparp.option.title.toast,
-                                value: "Your weekly schedule has been updated.",
+                            if (err !== false) {
+                              setshowModal({
+                                visible: true,
+                                body: <>{err}</>,
+                                header: "Error !!!",
                               });
+                            } else {
+                              const updateweeklyResponse = httpPost({
+                                cros: "getterCross",
+                                updatesWeekly: JSON.stringify(
+                                  weeklyAvailabilityInputs
+                                ),
+                                ajr: "a",
+                              });
+                              if (updateweeklyResponse !== null) {
+                                setshowModal({ visible: false });
+                                window.sharparp.push({
+                                  title: window.sharparp.option.title.toast,
+                                  value:
+                                    "Your weekly schedule has been updated.",
+                                });
+                              }
                             }
+                          } else {
+                            window.sharparp.push({
+                              title: window.sharparp.option.title.toast,
+                              value:
+                                "This feature has been disabled for app store testing !!",
+                            });
                           }
                         },
                       })
@@ -677,20 +697,29 @@ function App() {
                                   ),
                                   okText: "Revert/Remove",
                                   okFunc: async () => {
-                                    var tts = (
-                                      overrideScheduleJson ?? []
-                                    ).filter((item) => item.date !== a.date);
-                                    setoverrideScheduleJson(tts);
-                                    const httpOverrideSchedule = await httpPost(
-                                      {
-                                        cros: "getterCross",
-                                        cat: JSON.stringify(tts),
-                                        updateOverrided: "v1",
-                                      }
-                                    );
+                                    if (IsLive) {
+                                      var tts = (
+                                        overrideScheduleJson ?? []
+                                      ).filter((item) => item.date !== a.date);
+                                      setoverrideScheduleJson(tts);
+                                      const httpOverrideSchedule = await httpPost(
+                                        {
+                                          cros: "getterCross",
+                                          cat: JSON.stringify(tts),
+                                          updateOverrided: "v1",
+                                        }
+                                      );
 
-                                    if (httpOverrideSchedule ?? false) {
-                                      setshowModal({ visible: false });
+                                      if (httpOverrideSchedule ?? false) {
+                                        setshowModal({ visible: false });
+                                      }
+                                    } else {
+                                      window.sharparp.push({
+                                        title:
+                                          window.sharparp.option.title.toast,
+                                        value:
+                                          "This feature has been disabled for app store testing !!",
+                                      });
                                     }
                                   },
                                 });
@@ -749,35 +778,43 @@ function App() {
                               </>
                             ),
                             okFunc: async () => {
-                              function updateOrPush(date, newTime) {
-                                let fff = overrideScheduleJson ?? [];
-                                // Check if the date exists in the array
-                                const index = fff.findIndex(
-                                  (item) => item.date === date
-                                );
-                                if (index !== -1) {
-                                  // Date exists, update the time
-                                  fff[index].time = newTime;
-                                } else {
-                                  // Date does not exist, push new object
-                                  fff.push({ date: date, time: newTime });
+                              if (IsLive) {
+                                function updateOrPush(date, newTime) {
+                                  let fff = overrideScheduleJson ?? [];
+                                  // Check if the date exists in the array
+                                  const index = fff.findIndex(
+                                    (item) => item.date === date
+                                  );
+                                  if (index !== -1) {
+                                    // Date exists, update the time
+                                    fff[index].time = newTime;
+                                  } else {
+                                    // Date does not exist, push new object
+                                    fff.push({ date: date, time: newTime });
+                                  }
+                                  setoverrideScheduleJson(fff);
                                 }
-                                setoverrideScheduleJson(fff);
-                              }
 
-                              updateOrPush(
-                                String(calenderDaysClick),
-                                overrideInput
-                              );
+                                updateOrPush(
+                                  String(calenderDaysClick),
+                                  overrideInput
+                                );
 
-                              const httpOverrideSchedule = await httpPost({
-                                cros: "getterCross",
-                                cat: JSON.stringify(overrideScheduleJson),
-                                updateOverrided: "v1",
-                              });
+                                const httpOverrideSchedule = await httpPost({
+                                  cros: "getterCross",
+                                  cat: JSON.stringify(overrideScheduleJson),
+                                  updateOverrided: "v1",
+                                });
 
-                              if (httpOverrideSchedule ?? false) {
-                                setshowModal({ visible: false });
+                                if (httpOverrideSchedule ?? false) {
+                                  setshowModal({ visible: false });
+                                }
+                              } else {
+                                window.sharparp.push({
+                                  title: window.sharparp.option.title.toast,
+                                  value:
+                                    "This feature has been disabled for app store testing !!",
+                                });
                               }
                             },
                             okText: "Override",
