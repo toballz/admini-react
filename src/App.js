@@ -71,6 +71,7 @@ function App() {
     right: <></>,
   });
   const [overrideScheduleJson, setoverrideScheduleJson] = useState([]);
+  const [isLoggedIn, setisLoggedIn] = useState(false);
   //
   //
   //***********************
@@ -211,6 +212,19 @@ function App() {
   };
 
   useEffect(() => {
+    const checkLogin = async () => {
+      const isLoggedinResponse = await httpPost({
+        cros: "1",
+        isloggedin: "2",
+      });
+      
+      if (isLoggedinResponse !== null) {
+        let sss = (await isLoggedinResponse.json()).message;
+        console.log(sss);
+        setisLoggedIn(sss); 
+      }
+    };
+
     const siOnline = () => setshowModal({ visible: false });
     const siOffline = () =>
       setshowModal({
@@ -236,6 +250,7 @@ function App() {
     window.addEventListener("contextmenu", blockContextMenu);
     window.addEventListener("online", siOnline);
     window.addEventListener("offline", siOffline);
+    checkLogin();
 
     return () => {
       window.removeEventListener("contextmenu", blockContextMenu);
@@ -271,25 +286,62 @@ function App() {
         {showTabNavigation === "firstpage" && (
           //first page
           <section>
-            <div
-              style={{
-                height: "86vh",
-              }}
-              className="text-center d-flex justify-content-center align-items-center"
-            >
-              <div>
-                <h1>Welcome back</h1>
-                <p>cocohairsignature.com</p>
-                <br />
-                <button
-                  className="btn btn-primary"
-                  onClick={() => bottomNavClickPage(pagesNav.appointments)}
-                  style={{ width: "100%", padding: "12px" }}
-                >
-                  View appointments
-                </button>
+            {isLoggedIn === true ? (
+              <div
+                style={{
+                  height: "79vh",
+                }}
+                className="d-flex justify-content-center align-items-center"
+              >
+                <div>
+                  <h1>Welcome back</h1>
+                  <p>cocohairsignature.com</p>
+                  <br />
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => bottomNavClickPage(pagesNav.appointments)}
+                    style={{ width: "100%", padding: "12px" }}
+                  >
+                    View appointments
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div
+                style={{
+                  height: "79vh",
+                }}
+                className="text-center d-flex justify-content-center align-items-center"
+              >
+                <div className="login-container">
+                  <h2 className="text-center mb-1">Login</h2>
+                  <div className="text-center mb-3">cocohairsignature.com</div>
+                  <div>
+                    <div className="form-group">
+                      <label htmlFor="username">Username</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="username"
+                        placeholder="Enter username"
+                      />
+                    </div>
+                    <div className="form-group mt-3">
+                      <label htmlFor="password">Password</label>
+                      <input
+                        type="password"
+                        className="form-control"
+                        id="password"
+                        placeholder="Password"
+                      />
+                    </div>
+                    <button className="btn btn-primary mt-3" onClick={()=>{
+
+                    }}>Login</button>
+                  </div>
+                </div>
+              </div>
+            )}
           </section>
         )}
 
