@@ -22,6 +22,12 @@ const pagesNav = {
   edit_override: "edit_override",
   profile: "profile",
 };
+function _toast(va) {
+  window.sharparp.push({
+    title: window.sharparp.option.title.toast,
+    value: "Error trying to login.",
+  });
+}
 //
 //render app
 
@@ -71,7 +77,9 @@ function App() {
     right: <></>,
   });
   const [overrideScheduleJson, setoverrideScheduleJson] = useState([]);
-  const [isLoggedIn, setisLoggedIn] = useState(false);
+  const [isLoggedIn, setisLoggedIn] = useState("awaitloading");
+  const [inputLoginEmail, setinputLoginEmail] = useState("");
+  const [inputLoginPassword, setinputLoginPassword] = useState("");
   //
   //
   //***********************
@@ -217,11 +225,11 @@ function App() {
         cros: "1",
         isloggedin: "2",
       });
-      
+
       if (isLoggedinResponse !== null) {
-        let sss = (await isLoggedinResponse.json()).message;
+        let sss = (await isLoggedinResponse.json()).code;
         console.log(sss);
-        setisLoggedIn(sss); 
+        setisLoggedIn(sss === 200 ? true : false);
       }
     };
 
@@ -272,6 +280,9 @@ function App() {
   //**************
   //**************
   //**************
+  if(isLoggedIn === "awaitloading"){
+    return <>Loading .......</>
+  }
   return (
     <>
       <header className="container">
@@ -318,12 +329,14 @@ function App() {
                   <div className="text-center mb-3">cocohairsignature.com</div>
                   <div>
                     <div className="form-group">
-                      <label htmlFor="username">Username</label>
+                      <label htmlFor="useremail">Username</label>
                       <input
                         type="text"
                         className="form-control"
-                        id="username"
-                        placeholder="Enter username"
+                        id="useremail"
+                        placeholder="Enter Email"
+                        value={inputLoginEmail}
+                        onChange={(e) => setinputLoginEmail(e.target.value)}
                       />
                     </div>
                     <div className="form-group mt-3">
@@ -333,11 +346,64 @@ function App() {
                         className="form-control"
                         id="password"
                         placeholder="Password"
+                        value={inputLoginPassword}
+                        onChange={(e) => setinputLoginPassword(e.target.value)}
                       />
                     </div>
-                    <button className="btn btn-primary mt-3" onClick={()=>{
-
-                    }}>Login</button>
+                    <button
+                      className="btn btn-primary mt-3 w-100"
+                      onClick={async () => {
+                        if (
+                          inputLoginEmail.length > 5 &&
+                          /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
+                            inputLoginEmail
+                          ) &&
+                          inputLoginPassword.length >= 6
+                        ) {
+                          const loginResponse = await httpPost({
+                            cros: "getterCross",
+                            loginn: "o",
+                            remail: btoa(inputLoginEmail),
+                            rpassword: btoa(inputLoginPassword),
+                          });
+                          if (loginResponse !== null) {
+                            let sss = await loginResponse.json(); 
+                            if (sss.code === 200) {
+                              setisLoggedIn(true);
+                              bottomNavClickPage(pagesNav.appointments);
+                            } else {
+                              window.sharparp.push({
+                                title: window.sharparp.option.title.snackbar,
+                                value: sss.message,
+                              });
+                            }
+                          } else {
+                            _toast("Error trying to login.");
+                          }
+                        } else {
+                          _toast("Input a valid email or password.");
+                        }
+                      }}
+                    >
+                      <span>
+                        <i className="bi bi-file-lock"></i>
+                      </span>
+                      <span>Login</span>
+                    </button>
+                    <button
+                      className="btn btn-light mt-3 mb-5 w-100 d-flex align-items-center justify-content-center"
+                      onClick={() =>
+                        window.sharparp.push({
+                          title: window.sharparp.option.title.setlogout,
+                          value: "signout",
+                        })
+                      }
+                    >
+                      <span>
+                        <i className="bi bi-caret-left"></i>
+                      </span>{" "}
+                      <span>Back</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -509,11 +575,7 @@ function App() {
                                     ksy: appointment["orderId"],
                                   }).then((deleteResponse) => {
                                     if (deleteResponse !== null) {
-                                      window.sharparp.push({
-                                        title:
-                                          window.sharparp.option.title.toast,
-                                        value: "Appointment has been deleted.",
-                                      });
+                                      _toast("Appointment has been deleted.");
                                       setshowModal({ visible: false });
                                       setTimeout(function () {
                                         window.location.reload();
@@ -521,11 +583,9 @@ function App() {
                                     }
                                   });
                                 } else {
-                                  window.sharparp.push({
-                                    title: window.sharparp.option.title.toast,
-                                    value:
-                                      "This feature has been disabled for app store testing !!",
-                                  });
+                                  _toast(
+                                    "This feature has been disabled for app store testing !!"
+                                  );
                                 }
                               },
                             }),
@@ -640,19 +700,15 @@ function App() {
                               });
                               if (updateweeklyResponse !== null) {
                                 setshowModal({ visible: false });
-                                window.sharparp.push({
-                                  title: window.sharparp.option.title.toast,
-                                  value:
-                                    "Your weekly schedule has been updated.",
-                                });
+                                _toast(
+                                  "Your weekly schedule has been updated."
+                                );
                               }
                             }
                           } else {
-                            window.sharparp.push({
-                              title: window.sharparp.option.title.toast,
-                              value:
-                                "This feature has been disabled for app store testing !!",
-                            });
+                            _toast(
+                              "This feature has been disabled for app store testing !!"
+                            );
                           }
                         },
                       })
@@ -766,12 +822,9 @@ function App() {
                                         setshowModal({ visible: false });
                                       }
                                     } else {
-                                      window.sharparp.push({
-                                        title:
-                                          window.sharparp.option.title.toast,
-                                        value:
-                                          "This feature has been disabled for app store testing !!",
-                                      });
+                                      _toast(
+                                        "This feature has been disabled for app store testing !!"
+                                      );
                                     }
                                   },
                                 });
@@ -862,11 +915,9 @@ function App() {
                                   setshowModal({ visible: false });
                                 }
                               } else {
-                                window.sharparp.push({
-                                  title: window.sharparp.option.title.toast,
-                                  value:
-                                    "This feature has been disabled for app store testing !!",
-                                });
+                                _toast(
+                                  "This feature has been disabled for app store testing !!"
+                                );
                               }
                             },
                             okText: "Override",
@@ -980,12 +1031,18 @@ function App() {
 
                 <div
                   className="list-group-item list-group-item-action"
-                  onClick={() =>
+                  onClick={async () => {
+                    await httpPost({
+                      cros: "getterCross",
+                      signlogout: "0",
+                    });
+                    setisLoggedIn(false);
+                    setshowTabNavigation("firstpage");
                     window.sharparp.push({
                       title: window.sharparp.option.title.setlogout,
                       value: "signout",
-                    })
-                  }
+                    });
+                  }}
                 >
                   <i className="bi bi-box-arrow-right"></i> Sign Out
                 </div>
@@ -1045,38 +1102,40 @@ function App() {
       </main>
 
       <footer>
-        <nav className="bg-light navbar ">
-          <div className="container">
-            <button
-              onClick={() => bottomNavClickPage(pagesNav.appointments)}
-              className="nav-link"
-            >
-              <i className="bi bi-house"></i>
-              <span className="d-block navb-fs">Appointments</span>
-            </button>
-            <button
-              onClick={() => bottomNavClickPage(pagesNav.edit)}
-              className="nav-link"
-            >
-              <i className="bi bi-pencil-square"></i>
-              <span className="d-block navb-fs">Edits</span>
-            </button>
-            <button
-              className="nav-link"
-              onClick={() => bottomNavClickPage(pagesNav.stats)}
-            >
-              <i className="bi bi-bar-chart"></i>
-              <span className="d-block navb-fs">Stats</span>
-            </button>
-            <button
-              onClick={() => bottomNavClickPage(pagesNav.settings)}
-              className="nav-link"
-            >
-              <i className="bi bi-gear"></i>
-              <span className="d-block navb-fs">Settings</span>
-            </button>
-          </div>
-        </nav>
+        {isLoggedIn === true && (
+          <nav className="bg-light navbar ">
+            <div className="container">
+              <button
+                onClick={() => bottomNavClickPage(pagesNav.appointments)}
+                className="nav-link"
+              >
+                <i className="bi bi-house"></i>
+                <span className="d-block navb-fs">Appointments</span>
+              </button>
+              <button
+                onClick={() => bottomNavClickPage(pagesNav.edit)}
+                className="nav-link"
+              >
+                <i className="bi bi-pencil-square"></i>
+                <span className="d-block navb-fs">Edits</span>
+              </button>
+              <button
+                className="nav-link"
+                onClick={() => bottomNavClickPage(pagesNav.stats)}
+              >
+                <i className="bi bi-bar-chart"></i>
+                <span className="d-block navb-fs">Stats</span>
+              </button>
+              <button
+                onClick={() => bottomNavClickPage(pagesNav.settings)}
+                className="nav-link"
+              >
+                <i className="bi bi-gear"></i>
+                <span className="d-block navb-fs">Settings</span>
+              </button>
+            </div>
+          </nav>
+        )}
       </footer>
 
       {showModal.visible && (
