@@ -8,7 +8,7 @@ import {
   domain,
   IsLive,
 } from "./functions.tsx";
-import { format, parse } from "date-fns";
+import { format, parse, startOfMonth, subMonths } from "date-fns";
 import { Modal, Navbar, Dropdown } from "react-bootstrap";
 
 //
@@ -25,7 +25,7 @@ const pagesNav = {
 function _toast(va) {
   window.sharparp.push({
     title: window.sharparp.option.title.toast,
-    value: "Error trying to login.",
+    value: va,
   });
 }
 //
@@ -173,8 +173,11 @@ function App() {
         cros: "getterCross",
         v: "1,",
         stats: "",
-        beginingOfThisMonth: "20240812",
-        beginingOfLastMonth: "20240701",
+        beginingOfThisMonth: format(startOfMonth(new Date()), "yyyyMMdd"),
+        beginingOfLastMonth: format(
+          startOfMonth(subMonths(new Date(), 1)),
+          "yyyyMMdd"
+        ),
         sg: "0",
       });
 
@@ -280,8 +283,8 @@ function App() {
   //**************
   //**************
   //**************
-  if(isLoggedIn === "awaitloading"){
-    return <>Loading .......</>
+  if (isLoggedIn === "awaitloading") {
+    return <>Loading .......</>;
   }
   return (
     <>
@@ -367,7 +370,7 @@ function App() {
                             rpassword: btoa(inputLoginPassword),
                           });
                           if (loginResponse !== null) {
-                            let sss = await loginResponse.json(); 
+                            let sss = await loginResponse.json();
                             if (sss.code === 200) {
                               setisLoggedIn(true);
                               bottomNavClickPage(pagesNav.appointments);
@@ -954,7 +957,7 @@ function App() {
             <hr />
             <h2 className="text-center">Top 5 Hairstyle Booked</h2>
             <ul>
-              {statsPage["popularHairstyleBooked"].map((item, index) => (
+              {(statsPage["popularHairstyleBooked"] ?? []).map((item, index) => (
                 <li
                   key={index}
                   className="d-flex flex-row align-items-center mb-3"
@@ -987,27 +990,23 @@ function App() {
             style={{ height: "76vh" }}
           >
             <div className="mt-5 w-100">
-              <div className="list-group settingsj">
-                <div className="list-group-item list-group-item-action d-flex justify-content-between">
-                  <span>
-                    <i className="bi bi-bell"></i>Notifications{" "}
-                  </span>
-                  <i className="bi bi-toggle-off"></i>
-                </div>
+              <div className="list-group settingsj"> 
 
                 <br />
-                <div
-                  className="list-group-item list-group-item-action d-flex justify-content-between"
-                  onClick={() =>
-                    window.sharparp.push({
-                      title: window.sharparp.option.title.href,
-                      value: "https://stripe.com/",
-                    })
-                  }
-                >
-                  <span>View payments - stripe.com </span>
-                  <i className="bi bi-box-arrow-up-right"></i>
-                </div>
+                {IsLive && (
+                  <div
+                    className="list-group-item list-group-item-action d-flex justify-content-between"
+                    onClick={() =>
+                      window.sharparp.push({
+                        title: window.sharparp.option.title.href,
+                        value: "https://stripe.com/",
+                      })
+                    }
+                  >
+                    <span>View payments - stripe.com </span>
+                    <i className="bi bi-box-arrow-up-right"></i>
+                  </div>
+                )}
                 <div
                   className="list-group-item list-group-item-action d-flex justify-content-between"
                   onClick={() =>
@@ -1022,12 +1021,12 @@ function App() {
                 </div>
                 <br />
 
-                <div
+                {/* <div
                   className="list-group-item list-group-item-action"
                   onClick={() => bottomNavClickPage(pagesNav.profile)}
                 >
                   <i className="bi bi-person"></i> <span>Profile</span>
-                </div>
+                </div> */}
 
                 <div
                   className="list-group-item list-group-item-action"
