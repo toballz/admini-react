@@ -7,9 +7,16 @@ import {
   todayDate,
   domain,
   IsLive,
+  LoadingOverlay,
 } from "./functions.tsx";
 import { format, parse, startOfMonth, subMonths } from "date-fns";
-import { Modal, Navbar, Dropdown } from "react-bootstrap";
+import {
+  Modal,
+  Navbar,
+  Dropdown,
+  Toast,
+  ToastContainer,
+} from "react-bootstrap";
 
 //
 //
@@ -22,12 +29,7 @@ const pagesNav = {
   edit_override: "edit_override",
   profile: "profile",
 };
-function _toast(va) {
-  window.sharparp.push({
-    title: window.sharparp.option.title.toast,
-    value: va,
-  });
-}
+
 //
 //render app
 
@@ -71,6 +73,14 @@ function App() {
     okColor: "#xxxx",
     okFunc: () => {},
   });
+  const [showToast, setshowToast] = useState({
+    visible: false,
+    header: false,
+    message: <></>,
+    closeFunc: false, //()=>{}
+  });
+  const [showLoading, setshowLoading] = useState();
+
   const [headerNav, setheaderNav] = useState({
     left: <></>,
     center: <></>,
@@ -81,13 +91,19 @@ function App() {
   const [inputLoginEmail, setinputLoginEmail] = useState("");
   const [inputLoginPassword, setinputLoginPassword] = useState("");
   //
+
   //
   //***********************
+  //***********************
+  //***********************
+  //***********************
+  //***********************
+  //***********************
+  //***********************
+  //***********************
+  //***********************
   const bottomNavClickPage = async (divName) => {
-    window.sharparp.push({
-      title: window.sharparp.option.title.loading,
-      value: "start",
-    });
+    setshowLoading(true);
     setheaderNav({ left: null, center: null, right: null });
     if (divName === pagesNav.appointments) {
       const httpResponse = await httpPost({
@@ -187,18 +203,22 @@ function App() {
     }
 
     setshowTabNavigation(divName);
-    window.sharparp.push({
-      title: window.sharparp.option.title.loading,
-      value: "stop",
-    });
+
+    setTimeout(function () {
+      setshowLoading(false);
+    }, 1200);
   };
   function copyPhoneEmail(phoneEmail, type) {
     try {
       navigator.clipboard.writeText(phoneEmail);
-      window.sharparp.push({
-        title: window.sharparp.option.title.href,
-        value: (type === "phone" ? "tel" : "mailto") + ":" + phoneEmail,
-      });
+      window.open(
+        (type === "phone" ? "tel" : "mailto") + ":" + phoneEmail,
+        "_blank"
+      );
+      // window.sharparp.push({
+      //   title: window.sharparp.option.title.href,
+      //   value: (type === "phone" ? "tel" : "mailto") + ":" + phoneEmail,
+      // });
     } catch (e) {
       navigator.clipboard.writeText(phoneEmail);
     }
@@ -375,16 +395,22 @@ function App() {
                               setisLoggedIn(true);
                               bottomNavClickPage(pagesNav.appointments);
                             } else {
-                              window.sharparp.push({
-                                title: window.sharparp.option.title.snackbar,
-                                value: sss.message,
+                              setshowToast({
+                                visible: true,
+                                message: sss.message,
                               });
                             }
                           } else {
-                            _toast("Error trying to login.");
+                            setshowToast({
+                              visible: true,
+                              message: "Error trying to login.",
+                            });
                           }
                         } else {
-                          _toast("Input a valid email or password.");
+                          setshowToast({
+                            visible: true,
+                            message: "Input a valid email or password.",
+                          });
                         }
                       }}
                     >
@@ -395,12 +421,7 @@ function App() {
                     </button>
                     <button
                       className="btn btn-light mt-3 mb-5 w-100 d-flex align-items-center justify-content-center"
-                      onClick={() =>
-                        window.sharparp.push({
-                          title: window.sharparp.option.title.setlogout,
-                          value: "signout",
-                        })
-                      }
+                      onClick={() => {}}
                     >
                       <span>
                         <i className="bi bi-caret-left"></i>
@@ -578,7 +599,11 @@ function App() {
                                     ksy: appointment["orderId"],
                                   }).then((deleteResponse) => {
                                     if (deleteResponse !== null) {
-                                      _toast("Appointment has been deleted.");
+                                      setshowToast({
+                                        visible: true,
+                                        message:
+                                          "Appointment has been deleted.",
+                                      });
                                       setshowModal({ visible: false });
                                       setTimeout(function () {
                                         window.location.reload();
@@ -586,9 +611,11 @@ function App() {
                                     }
                                   });
                                 } else {
-                                  _toast(
-                                    "This feature has been disabled for app store testing !!"
-                                  );
+                                  setshowToast({
+                                    visible: true,
+                                    message:
+                                      "This feature has been disabled for app store testing !!",
+                                  });
                                 }
                               },
                             }),
@@ -703,15 +730,19 @@ function App() {
                               });
                               if (updateweeklyResponse !== null) {
                                 setshowModal({ visible: false });
-                                _toast(
-                                  "Your weekly schedule has been updated."
-                                );
+                                setshowToast({
+                                  visible: true,
+                                  message:
+                                    "Your weekly schedule has been updated.",
+                                });
                               }
                             }
                           } else {
-                            _toast(
-                              "This feature has been disabled for app store testing !!"
-                            );
+                            setshowToast({
+                              visible: true,
+                              message:
+                                "This feature has been disabled for app store testing !!",
+                            });
                           }
                         },
                       })
@@ -825,9 +856,11 @@ function App() {
                                         setshowModal({ visible: false });
                                       }
                                     } else {
-                                      _toast(
-                                        "This feature has been disabled for app store testing !!"
-                                      );
+                                      setshowToast({
+                                        visible: true,
+                                        message:
+                                          "This feature has been disabled for app store testing !!",
+                                      });
                                     }
                                   },
                                 });
@@ -918,9 +951,11 @@ function App() {
                                   setshowModal({ visible: false });
                                 }
                               } else {
-                                _toast(
-                                  "This feature has been disabled for app store testing !!"
-                                );
+                                setshowToast({
+                                  visible: true,
+                                  message:
+                                    "This feature has been disabled for app store testing !!",
+                                });
                               }
                             },
                             okText: "Override",
@@ -957,28 +992,30 @@ function App() {
             <hr />
             <h2 className="text-center">Top 5 Hairstyle Booked</h2>
             <ul>
-              {(statsPage["popularHairstyleBooked"] ?? []).map((item, index) => (
-                <li
-                  key={index}
-                  className="d-flex flex-row align-items-center mb-3"
-                >
-                  <div style={{ flex: "2", maxWidth: "120px" }}>
-                    <img
-                      src={`https://cocohairsignature.com/img/${item["image"]}.jpg?trd`}
-                      alt={item["hairstyle"]}
-                    />
-                  </div>
+              {(statsPage["popularHairstyleBooked"] ?? []).map(
+                (item, index) => (
+                  <li
+                    key={index}
+                    className="d-flex flex-row align-items-center mb-3"
+                  >
+                    <div style={{ flex: "2", maxWidth: "120px" }}>
+                      <img
+                        src={`https://cocohairsignature.com/img/${item["image"]}.jpg?trd`}
+                        alt={item["hairstyle"]}
+                      />
+                    </div>
 
-                  <div className="mx-3 appointmentbookedlist">
-                    <div className="appointmentbookedlist">
-                      {item["hairstyle"]}
+                    <div className="mx-3 appointmentbookedlist">
+                      <div className="appointmentbookedlist">
+                        {item["hairstyle"]}
+                      </div>
+                      <div className="mt-1 text-success">
+                        <b>{item["appearance_count"]}: people booked this.</b>
+                      </div>
                     </div>
-                    <div className="mt-1 text-success">
-                      <b>{item["appearance_count"]}: people booked this.</b>
-                    </div>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                )
+              )}
             </ul>
           </section>
         )}
@@ -990,18 +1027,12 @@ function App() {
             style={{ height: "76vh" }}
           >
             <div className="mt-5 w-100">
-              <div className="list-group settingsj"> 
-
+              <div className="list-group settingsj">
                 <br />
                 {IsLive && (
                   <div
                     className="list-group-item list-group-item-action d-flex justify-content-between"
-                    onClick={() =>
-                      window.sharparp.push({
-                        title: window.sharparp.option.title.href,
-                        value: "https://stripe.com/",
-                      })
-                    }
+                    onClick={() => window.open("https://stripe.com/", "_blank")}
                   >
                     <span>View payments - stripe.com </span>
                     <i className="bi bi-box-arrow-up-right"></i>
@@ -1010,10 +1041,7 @@ function App() {
                 <div
                   className="list-group-item list-group-item-action d-flex justify-content-between"
                   onClick={() =>
-                    window.sharparp.push({
-                      title: window.sharparp.option.title.href,
-                      value: "https://cocohairsignature.com/",
-                    })
+                    window.open("https://cocohairsignature.com/", "_blank")
                   }
                 >
                   <span>cocohairsignature.com </span>
@@ -1137,6 +1165,33 @@ function App() {
         )}
       </footer>
 
+      {/* toast */}
+      <ToastContainer position="top-end">
+        <Toast
+          show={showToast.visible}
+          onClose={() => {
+            if (showToast.closeFunc) {
+              showToast.closeFunc();
+            } else {
+              setshowToast({ visible: false });
+            }
+          }}
+          delay={3000}
+          style={{ backgroundColor: "rgb(52 58 64 / 69%)", color: "#fff" }}
+          autohide
+        >
+          {showToast.header ? (
+            <Toast.Header>
+              <strong className="me-auto">Toast Title</strong>
+              <small>Just now</small>
+            </Toast.Header>
+          ) : (
+            <></>
+          )}
+          <Toast.Body>{showToast.message}</Toast.Body>
+        </Toast>
+      </ToastContainer>
+
       {showModal.visible && (
         <Modal
           show={showModal.visible}
@@ -1179,6 +1234,8 @@ function App() {
           </Modal.Footer>
         </Modal>
       )}
+
+      {showLoading && <LoadingOverlay />}
     </>
   );
 }

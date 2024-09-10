@@ -11,7 +11,7 @@ import React, { useState } from "react";
 
 export const domain = "https://cocohairsignature.com",
   apiM = domain + "/i/apim.php",
-  IsLive = false,
+  IsLive = true,
   todayDate = new Date(),
   WEEKDAYS = [
     "Sunday",
@@ -22,7 +22,13 @@ export const domain = "https://cocohairsignature.com",
     "Friday",
     "Saturday",
   ];
-
+export const  LoadingOverlay = () => {
+  return (
+    <div className="loading-overlay">
+      <div className="spinner"></div>
+    </div>
+  );
+};
 export async function httpPost(params: { [key: string]: string }) {
   var formData = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
